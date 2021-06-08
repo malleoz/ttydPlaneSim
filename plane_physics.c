@@ -22,31 +22,45 @@ Player getPlayer() {
 
 // TODO: Read from RAM dump to initialize player struct parameters (namely motStruct and position)
 void initPlayerStruct() {
-    // IF FLYING TO THE RIGHT:
-    // Seems that flags = 1
-    // rotationPivot.y = 90
-    // else: flags = 0, y = 270
-    player.motStruct.flags = 1;
-    player.motStruct.rotationPivot = (Vector){0, 90, 0};
-    player.motStruct.index4 = 2;
-    player.motStruct.index5 = 0;
-    player.motStruct.ySpeed = 0;
-    player.motStruct.index7 = 0; // TODO
-    player.motStruct.index8 = 0; // TODO
-    player.motStruct.index9 = 0; // TODO
+    // Scan for cmdline arguments from export_player.py
+    scanf("%f", &player.position.x);
+    scanf("%f", &player.position.y);
+    scanf("%f", &player.position.z);
+    scanf("%d", &player.motStruct.flags);
+    scanf("%f", &player.motStruct.rotationPivot.x);
+    scanf("%f", &player.motStruct.rotationPivot.y);
+    scanf("%f", &player.motStruct.rotationPivot.z);
+    scanf("%f", &player.motStruct.index4);
+    scanf("%f", &player.motStruct.index5);
+    scanf("%f", &player.motStruct.ySpeed);
+    scanf("%f", &player.motStruct.index7);
+    scanf("%f", &player.motStruct.index8);
+    scanf("%f", &player.motStruct.index9);
 
-    player.wStickDir1 = 0xB8; // THE GENETIC ALGORITHM WILL NEED TO MODIFY THIS VALUE
+    printf("Global variables initialized as follows:\n");
+    printf("%f\n", player.position.x);
+    printf("%f\n", player.position.y);
+    printf("%f\n", player.position.z);
+    printf("%d\n", player.motStruct.flags);
+    printf("%f\n", player.motStruct.rotationPivot.x);
+    printf("%f\n", player.motStruct.rotationPivot.y);
+    printf("%f\n", player.motStruct.rotationPivot.z);
+    printf("%f\n", player.motStruct.index4);
+    printf("%f\n", player.motStruct.index5);
+    printf("%f\n", player.motStruct.ySpeed);
+    printf("%f\n", player.motStruct.index7);
+    printf("%f\n", player.motStruct.index8);
+    printf("%f\n", player.motStruct.index9);
+
+    player.baseSpeed = 1.0; // This is always true, no need to scan for it
+
+    player.wStickDir1 = 0x00; // THE GENETIC ALGORITHM WILL NEED TO MODIFY THIS VALUE
     // FULL LEFT IS 0xB8
     // MIN LEFT IS 0xFF
     // NEUTRAL IS 0x00
     // MIN RIGHT IS 0x01
     // MAX RIGHT IS 0x48
 
-    (player.position).x = -355.383118;
-    (player.position).y = 192.5;
-    (player.position).z = 49.462914;
-
-    player.baseSpeed = 1.0;
     return;
 }
 
@@ -54,7 +68,6 @@ void init() {
     DOUBLE_802c4168 = 0x4330000080000000;
     gPi             = 3.1415927;
 
-    player.baseSpeed = 1.0;
     initPlayerStruct(player);
 
     return;
@@ -648,10 +661,6 @@ int frame() {
 
 int main() {
     init();
-    printf("Global variables initialized.\n");
-    
-    initPlayerStruct();
-    printf("Player structure initialized.\n");
 
     //struct Vector destination = (struct Vector){-369, 100, 0};
 
