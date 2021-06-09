@@ -39,20 +39,33 @@ def main(argc, argv):
     motIndex8 = motPtrStore.rfloat(0x20)
     motIndex9 = motPtrStore.rfloat(0x24)
 
+    ######################################
+    #         LANDING PARAMETERS         #
+    ######################################
+    # Specify the X and Y position bound #
+    # required in order to define what's #
+    # considered a valid plane flight.   #
+    landingX = 483.0
+    landingY = 125.0
+
+
     # Export to stdout
-    sys.stdout.write("%10.10f " % xPos)
-    sys.stdout.write("%10.10f " % yPos)
-    sys.stdout.write("%10.10f " % zPos)
+
+    sys.stdout.write("%.9g " % xPos)
+    sys.stdout.write("%.9g " % yPos)
+    sys.stdout.write("%.9g " % zPos)
     sys.stdout.write("%d " % motFlags)
-    sys.stdout.write("%10.10f " % motXRot)
-    sys.stdout.write("%10.10f " % motYRot)
-    sys.stdout.write("%10.10f " % motZRot)
-    sys.stdout.write("%10.10f " % motIndex4)
-    sys.stdout.write("%10.10f " % motIndex5)
-    sys.stdout.write("%10.10f " % motIndex6)
-    sys.stdout.write("%10.10f " % motIndex7)
-    sys.stdout.write("%10.10f " % motIndex8)
-    sys.stdout.write("%10.10f " % motIndex9)
+    sys.stdout.write("%.9g " % motXRot)
+    sys.stdout.write("%.9g " % motYRot)
+    sys.stdout.write("%.9g " % motZRot)
+    sys.stdout.write("%.9g " % motIndex4)
+    sys.stdout.write("%.9g " % motIndex5)
+    sys.stdout.write("%.9g " % motIndex6)
+    sys.stdout.write("%.9g " % motIndex7)
+    sys.stdout.write("%.9g " % motIndex8)
+    sys.stdout.write("%.9g " % motIndex9)
+    sys.stdout.write("%.9g " % landingX)
+    sys.stdout.write("%.9g " % landingY)
 
 
 if __name__ == "__main__":
