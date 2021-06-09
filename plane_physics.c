@@ -11,17 +11,27 @@ typedef uint32_t uint;
 typedef struct Player Player;
 typedef struct Vector Vector;
 typedef struct MotStruct MotStruct;
+typedef struct Result Result;
 
 double DOUBLE_802c4168;
 float  gPi;
 Player player; // Allocate on stack to appease trebuchet...
 
+float xPosStart;
+float yPosStart;
+float zPosStart;
+uint  motFlagsStart;
+float landingX;
+float landingY;
+
 Player getPlayer() {
     return player;
 }
 
-// TODO: Read from RAM dump to initialize player struct parameters (namely motStruct and position)
-void initPlayerStruct() {
+Player init() {
+    DOUBLE_802c4168 = 0x4330000080000000;
+    gPi             = 3.1415927;
+
     // Scan for cmdline arguments from export_player.py
     scanf("%f", &player.position.x);
     scanf("%f", &player.position.y);
@@ -36,6 +46,8 @@ void initPlayerStruct() {
     scanf("%f", &player.motStruct.index7);
     scanf("%f", &player.motStruct.index8);
     scanf("%f", &player.motStruct.index9);
+    scanf("%f", &landingX);
+    scanf("%f", &landingY);
 
     printf("Global variables initialized as follows:\n");
     printf("%f\n", player.position.x);
@@ -51,26 +63,12 @@ void initPlayerStruct() {
     printf("%f\n", player.motStruct.index7);
     printf("%f\n", player.motStruct.index8);
     printf("%f\n", player.motStruct.index9);
+    printf("%f\n", landingX);
+    printf("%f\n", landingY);
 
     player.baseSpeed = 1.0; // This is always true, no need to scan for it
 
-    player.wStickDir1 = 0x00; // THE GENETIC ALGORITHM WILL NEED TO MODIFY THIS VALUE
-    // FULL LEFT IS 0xB8
-    // MIN LEFT IS 0xFF
-    // NEUTRAL IS 0x00
-    // MIN RIGHT IS 0x01
-    // MAX RIGHT IS 0x48
-
-    return;
-}
-
-void init() {
-    DOUBLE_802c4168 = 0x4330000080000000;
-    gPi             = 3.1415927;
-
-    initPlayerStruct(player);
-
-    return;
+    return player;
 }
 
 // Restrict parameter to 0-360 deg
@@ -102,7 +100,9 @@ int sysMsec2Frame(int param_1) {
 }
 
 // Main simulation routine
-int frame() {
+void frameSim(signed char stickPosition, int numFrames, Player *previousFrame, Result *nextFrame) {
+    player = *previousFrame;
+    player.stickPosition = stickPosition;
     MotStruct motStruct = player.motStruct;
 
     bool bVar1 = false;
@@ -193,7 +193,7 @@ int frame() {
     player.dispDirectionCurrent = revise360((double)yPivot);
     printf("[0x8009cc04] player.dispDirectionCurrent[f1]:\t\t\t%10.6f\n", player.dispDirectionCurrent);
 
-    wStickDirX = player.wStickDir1;
+    wStickDirX = player.stickPosition;
     printf("[0x8009cc0c] wStickDirX[r5]:\t\t\t\t0x%X\n", wStickDirX);
                 
     // If analog stick is neutral
@@ -634,7 +634,6 @@ int frame() {
 
             if ((0.0 < local_28) && (uVar3 = motStruct.index8, motStruct.index8 = uVar3 + 1, iVar4 <= (int)(uVar3 + 1))) {
                 printf("[0x8009d67c] BRANCH NOT TAKEN\n");
-                return 0;
                 printf("Frame execution has ended at 0x8009d690");
             }
         }
@@ -646,7 +645,6 @@ int frame() {
 
             if ((local_28 < 0.0) && (uVar3 = motStruct.index8, motStruct.index8 = uVar3 + 1, iVar4 <= (int)(uVar3 + 1))) {
                 printf("[0x8009d620] BRANCH NOT TAKEN\n");
-                return 0;
                 printf("Frame execution has ended at 0x8009d634");
             }
         }
@@ -655,20 +653,43 @@ int frame() {
     // 0x8009d6a0
     // If Mario does not collide with obj, jump to 0x8009d718
 
+    // The frame has ended.
+    // set up the result struct
+    nextFrame->player   = player;
+    nextFrame->collided = false;
+    nextFrame->landed   = false;
 
-    return 0;
+    //Check to see if we have landed or bonked
+
+    // Determine if we have made contact with the landing wall, with varying logic depending on direction of flight
+    bool leftFlight = (motStruct.flags & 1) == 0;
+    if (leftFlight ? (player.position.x <= landingX) : (player.position.x >= landingX)) {
+        nextFrame->collided = true;
+
+        // If we're also above the landing platform, then we have landed
+        if (player.position.y >= landingY) {
+            nextFrame->landed = true;
+        }
+    }
+
+    return;
 }
 
 int main() {
     init();
 
-    //struct Vector destination = (struct Vector){-369, 100, 0};
-
-    int i;
+    int8_t i;
     for (i=0; i < 1; i++) {
         printf("Loop iteration %d\n", i);
-        frame();
+        Result *result = malloc(sizeof(Result));
+        frameSim(0, i, &player, result);
 
         printf("\n\nEnd Frame Position: X: %10.6f | Y: %10.6f | Z: %10.6f\n", player.position.x, player.position.y, player.position.z);
+        if (result->collided) {
+            printf("Collided!\n");
+        }
+        if (result->landed) {
+            printf("Landed!\n");
+        }
     }
 }
