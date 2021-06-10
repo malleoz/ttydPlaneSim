@@ -25,7 +25,7 @@ struct Player {
     struct Vector position;
     double dispDirectionCurrent;
     struct MotStruct motStruct;
-    uint8_t stickPosition;
+    int8_t stickPosition; // -72 to +72 inclusive
     float baseSpeed;
 };
 
@@ -36,9 +36,12 @@ struct Result {
     bool landed;
 };
 
-struct Player getPlayer();
 struct Player init();
 double revise360(double param_1);
-void sincosf(float __x, float *__sinx, float *__cosx);
+void sincosf(float x, float *sinx, float *cosx);
 int sysMsec2Frame(int param_1);
-void frameSim(signed char stickPosition, int numFrames, struct Player *previousFrame, struct Result *nextFrame);
+void neutralCalc(struct Player *player);
+void nonNeutralCalc(struct Player *player);
+void nosediveCalc(struct Player *player);
+void taildiveCalc(struct Player *player);
+void frameSim(signed char stickPosition, struct Player *previousFrame, struct Result *nextFrame);
