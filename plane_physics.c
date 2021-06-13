@@ -30,7 +30,7 @@ Player init() {
     scanf("%f", &player.position.x);
     scanf("%f", &player.position.y);
     scanf("%f", &player.position.z);
-    scanf("%d", &player.motStruct.flags);
+    scanf("%u", &player.motStruct.flags);
     scanf("%f", &player.motStruct.rotationPivot.x);
     scanf("%f", &player.motStruct.rotationPivot.y);
     scanf("%f", &player.motStruct.rotationPivot.z);
