@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -lm -g
+CFLAGS = -Wall -lm -g -Wextra -Werror
 
 test_simulation: run_simulation.o plane_physics.o test_simulation.c
 	${CC} ${CFLAGS} -otest_simulation run_simulation.o plane_physics.o test_simulation.c

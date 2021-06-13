@@ -9,11 +9,8 @@ int main(){
     for(int i = 0; i < numFrames; i++){
         stickPoses[i] = 10;
     }
-    printf("Stick positions allocated.\n");
     struct Result *results = malloc(numFrames*sizeof(struct Result));
-    printf("Results allocated!\n");
     struct Player startPoint = init();
-    printf("Starting player allocated.\n");
     int res = runSimulation(stickPoses, results, &startPoint, numFrames);
     int lastFrame = res > 0? res+1 : numFrames;
     for(int i = 0; i < lastFrame; i++){
