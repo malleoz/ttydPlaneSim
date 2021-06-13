@@ -4,7 +4,7 @@ import flags
 import bindatastore as bin
 
 FLAGS = flags.Flags()
-FLAGS.DefineString("in", "")        # Filepath to Dolphin RAM dump
+FLAGS.DefineString("in", "ram.raw")        # Filepath to Dolphin RAM dump
 #FLAGS.DefineString("region", "U")   # Game version (U or J)
 
 getMarioPtr = { "U": 0x8041e900}

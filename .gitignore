@@ -1,0 +1,6 @@
+**/*.o
+player.dat
+ram.raw
+test_simulation
+sample_sim/test_simulation
+__pycache__

@@ -1,3 +1,6 @@
+#ifndef PLANE_PHYSICS_H
+#define PLANE_PHYSICS_H
+
 #include <stdlib.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -45,3 +48,5 @@ void nonNeutralCalc(struct Player *player);
 void nosediveCalc(struct Player *player);
 void taildiveCalc(struct Player *player);
 void frameSim(signed char stickPosition, struct Player *previousFrame, struct Result *nextFrame);
+
+#endif

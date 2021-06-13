@@ -542,7 +542,7 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
 
     return;
 }
-
+/*
 int main() {
     Player cur = init();
 
@@ -567,3 +567,4 @@ int main() {
 
     }
 }
+*/
