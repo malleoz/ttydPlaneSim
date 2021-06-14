@@ -48,5 +48,7 @@ void nonNeutralCalc(struct Player *player);
 void nosediveCalc(struct Player *player);
 void taildiveCalc(struct Player *player);
 void frameSim(signed char stickPosition, struct Player *previousFrame, struct Result *nextFrame);
+float distance_to_go_x(Player p);
+float distance_to_go_y(Player p);
 
 #endif

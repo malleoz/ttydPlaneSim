@@ -547,6 +547,24 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
 
     return;
 }
+
+// returns < 0 if we overshot, > 0 if we haven't hit it yet
+float distance_to_go_x(Player p) {
+    bool flyLeft = p.motStruct.flags & 1 == 0 ? true : false; // Flight direction
+
+    if (flyLeft) {
+        return p.position.x - landingX;
+    }
+    else {
+        return landingX - p.position.x;
+    }
+}
+
+// returns > 0 if we are below platform, < 0 if we're over platform
+float distance_to_go_y(Player p) {
+    return landingY - p.position.y;
+}
+
 /*
 int main() {
     Player cur = init();
