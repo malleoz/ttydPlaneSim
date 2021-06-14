@@ -3,4 +3,5 @@ player.dat
 ram.raw
 test_simulation
 sample_sim/test_simulation
+sample_sim/struggle
 __pycache__
