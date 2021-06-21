@@ -1,5 +1,7 @@
 #include "plane_physics.h"
 #include "run_simulation.h"
+#include <stdlib.h>
+#include <stdio.h>
 /** Runs frameSim repeatedly, and once the simulation
 indicates that the player has collided, stops the simulation.
 The returned int is the index into output where the collision happened. 
@@ -18,6 +20,7 @@ int runSimulation(int8_t *stickPositions,
                   struct Player *startPoint, 
                   int maxFrames){
     //Initialize the first frame of the output.
+    printf("In runSimulation, line %d\n", __LINE__);
     output[0].collided=false;
     output[0].landed = false;
     output[0].player = *startPoint;
@@ -29,6 +32,7 @@ int runSimulation(int8_t *stickPositions,
                  output + curFrame);
         if(output[curFrame].collided) return curFrame;
     }
+    printf("In runSimulation, line %d\n", __LINE__);
     return -1;
 }
 

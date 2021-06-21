@@ -39,16 +39,78 @@ struct Result {
     bool landed;
 };
 
+/**
+Initialization function, should be called once per program run. 
+This reads in arguments from stdin and creates a player struct containing the 
+starting player state. 
+
+Returns: 
+A Player struct that represents the initial player state. You should probably
+not clobber this struct. 
+
+Caveats:
+This function also reads in (and sets) the global landingX and landingY. 
+If you are using this code in a multiprocess environment, you must set these 
+variables in every process. 
+
+Author: Malleo
+*/
 struct Player init();
+/** ???
+Author: Malleo
+*/
 double revise360(double param_1);
+/** ???
+Author: Malleo */
 void sincosf(float x, float *sinx, float *cosx);
+/** ???
+Author: Malleo */
 int sysMsec2Frame(int param_1);
+/** ???
+Author: Malleo */
 void neutralCalc(struct Player *player);
+/** ???
+Author: Malleo */
 void nonNeutralCalc(struct Player *player);
+/** ???
+Author: Malleo */
 void nosediveCalc(struct Player *player);
+/** ???
+Author: Malleo */
 void taildiveCalc(struct Player *player);
+/** 
+Run a single frame of the game simulation. 
+Arguments:
+signed char (i.e., int8_t) stickPosition. 
+    The current input from the analog stick. Range is from -72 to 72, inclusive.
+Player * previousFrame.
+    The result from the previous simulation frame, or the initial Player 
+    returned by init(). This value is NOT clobbered by this function. 
+Result *nextFrame. 
+    OUT parameter. This is where the result of this frame of simulation will be 
+    stored. This will be clobbered by the function. 
+
+Author: Malleo
+*/
 void frameSim(signed char stickPosition, struct Player *previousFrame, struct Result *nextFrame);
-float distance_to_go_x(Player p);
-float distance_to_go_y(Player p);
+/** 
+How far is left to go before we reach the x-coordinate of the target platform? 
+Arguments:
+Player p: the current player struct. 
+Returns:
+The distance left. This value will be positive if we still need to get more distance to reach the platform, and negative if we have overshot. 
+Author: Malleo
+*/
+float distance_to_go_x(struct Player p);
+/** 
+How far below the platform are we? 
+Arguments: 
+Player p: The current player struct.
+Returns:
+The distance we are below the platform. This value will be positive if the 
+player is below the target, and negative if we're above it. 
+Author: Malleo
+*/
+float distance_to_go_y(struct Player p);
 
 #endif

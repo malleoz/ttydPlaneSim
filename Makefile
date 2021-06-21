@@ -1,5 +1,8 @@
 CC = gcc
-CFLAGS = -Wall -lm -g -Wextra -Werror -Wpedantic
+GAUL_BASE = /home/pi/gaul-install
+GAUL_FLAGS = -lgaul -L${GAUL_BASE}/lib -I${GAUL_BASE}/include -lgaul_util -lm
+#CFLAGS = -Wall -lm -g -Wextra -Werror -Wpedantic ${GAUL_FLAGS}
+CFLAGS = -lm -g  ${GAUL_FLAGS}
 
 test_simulation: run_simulation.o plane_physics.o test_simulation.c
 	${CC} ${CFLAGS} -otest_simulation run_simulation.o plane_physics.o test_simulation.c
@@ -14,3 +17,9 @@ runTestSimulation: test_simulation player.dat
 
 player.dat: export_player.py ram.raw
 	python3 export_player.py > player.dat
+
+basic_struggle: basic_test.c run_simulation.o plane_physics.o
+	${CC} ${CFLAGS} -obasic_struggle run_simulation.o plane_physics.o basic_test.c
+
+test_basic: basic_struggle
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib ./basic_struggle 

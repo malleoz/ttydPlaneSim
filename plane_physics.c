@@ -550,7 +550,7 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
 
 // returns < 0 if we overshot, > 0 if we haven't hit it yet
 float distance_to_go_x(Player p) {
-    bool flyLeft = p.motStruct.flags & 1 == 0 ? true : false; // Flight direction
+    bool flyLeft = (p.motStruct.flags & 1) == 0 ? true : false; // Flight direction
 
     if (flyLeft) {
         return p.position.x - landingX;
