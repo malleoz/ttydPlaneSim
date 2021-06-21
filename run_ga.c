@@ -1,65 +1,30 @@
-/**********************************************************************
-  struggle.c
- **********************************************************************
-
-  struggle - Test/example program for GAUL.
-  Copyright ©2001-2004, Stewart Adcock <stewart@linux-domain.com>
-  All rights reserved.
-
-  The latest version of this program should be available at:
-  http://gaul.sourceforge.net/
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
-  (at your option) any later version.  Alternatively, if your project
-  is incompatible with the GPL, I will probably agree to requests
-  for permission to use the terms of any other license.
-
-  This program is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY WHATSOEVER.
-
-  A full copy of the GNU General Public License should be in the file
-  "COPYING" provided with this distribution; if not, see:
-  http://www.gnu.org/
-
- **********************************************************************
-
-  Synopsis:	Test/example program for GAUL.
-
-		This program is fairly lean, showing how little
-		application code is needed when using GAUL.
-
-		This program aims to generate the final sentence from
-		Chapter 3 of Darwin's "The Origin of Species",
-		entitled "Struggle for Existence".
-
-		This example is explained in docs/html/tutorial/simple.html
-
- **********************************************************************/
-
 /*
  * Includes
  */
 #include "gaul.h"
 #include "run_simulation.h"
 #include "plane_physics.h"
-/*
- * The solution string.
- */
-static char *target_text="When we reflect on this struggle, we may console ourselves with the full belief, that the war of nature is not incessant, that no fear is felt, that death is generally prompt, and that the vigorous, the healthy, and the happy survive and multiply.";
 
 typedef struct {
+    //This is a shared pointer that is read-only. 
+    //It comes from init(). 
     struct Player *startPoint;
+    //An array of the results from the simulation. 
+    //Changing the controller inputs invalidates this 
+    //array until the entity has been evaluated again. 
     struct Result *results;
+    //The vector of stick positions. 
     int8_t *controllerInputs;
+    //After running the simulation, this is the frame where it
+    //hit the target platform, or -1 if it failed. 
     int collideFrame;
 } entity_chrom;
 
 
 //Initialize an entity.
-//This will add a custom memory buffer for temporary storage, 
-//and it will allocate (but not initialize) the chromosome. 
+//Allocate (but not initialize) the chromosome's result array and
+//stick positions array.
+//Copy the data pointer from pop into the embryo's startPoint. 
 bool plane_chromosome_constructor(population *pop, entity *embryo){
     int frameIdx; 
     if(!pop) die("No pointer to population!");
@@ -86,8 +51,9 @@ bool plane_chromosome_constructor(population *pop, entity *embryo){
     return true;
 }
 
+//Randomly mutate one of the controller inputs in father and 
+//store the new chromosome in son. 
 void plane_mutate_point_random(population *pop, entity *father, entity *son){
-    printf("Entered mutator, line %d.\n", __LINE__);
     //Select a frame that occurs before the simulation collides. 
     int collideFrame =((entity_chrom*) father->chromosome[0])->collideFrame;
     int maxFrame = pop->len_chromosomes;
@@ -104,10 +70,10 @@ void plane_mutate_point_random(population *pop, entity *father, entity *son){
     ((int8_t *)((entity_chrom *)son->chromosome[0])->controllerInputs)[mutate_point] = controllerInput;
 }
         
-
+//Copy the chromosome from src into dest. 
+//chromosomeid is ignored. 
 void plane_chromosome_replicate(const population *pop, 
         entity *src, entity *dest, const int chromosomeid){
-    printf("Entered chrom replicate, line %d.\n", __LINE__);
     if(!pop) die("No population passed in.");
     if(!src || !dest) die("Null entity passed.");
     if(!src->chromosome || !dest->chromosome) die("Entity passed with no chromosomes.");
@@ -121,9 +87,8 @@ void plane_chromosome_replicate(const population *pop,
     }
 }
 
-
+//Free the memory held by a chromosome. 
 void plane_chromosome_destructor(population *pop, entity *corpse){
-    printf("Entered chrom destructor, line %d.\n", __LINE__);
     if(!pop) die("Null pointer to population passed.");
     if(!corpse) die("Null pointer to entity passed.");
     if(corpse->chromosome==NULL) die("Chromosome already deallocated.");
@@ -137,7 +102,6 @@ void plane_chromosome_destructor(population *pop, entity *corpse){
 //Given an entity (adam), randomly initialize a set of controller inputs.
 //(Before seeding, the inputs may be invalid.)
 boolean plane_seed(population *pop, entity *adam){
-    printf("Entered seed, line %d and adam %d\n", __LINE__, adam);
     int frameIdx;
     for(frameIdx = 0; frameIdx < pop->len_chromosomes; frameIdx++){
         int nextValue = random_int(2*72 + 1); //(0-144, inclusive)
@@ -149,36 +113,9 @@ boolean plane_seed(population *pop, entity *adam){
 }
 
 
-/**********************************************************************
-  struggle_score()
-  synopsis:	Score solution.
-  parameters:
-  return:
-  updated:	16/06/01
- **********************************************************************/
 
-static boolean struggle_score(population *pop, entity *entity)
-  {
-  int		k;		/* Loop variable over all alleles. */
-
-  entity->fitness = 0.0;
-
-  /* Loop over alleles in chromosome. */
-  for (k = 0; k < pop->len_chromosomes; k++)
-    {
-    if ( ((char *)entity->chromosome[0])[k] == target_text[k])
-      entity->fitness+=1.0;
-    /*
-     * Component to smooth function, which helps a lot in this case:
-     * Comment it out if you like.
-     */
-    entity->fitness += (127.0-abs((int)(((char *)entity->chromosome[0])[k]-target_text[k])))/50.0;
-    }
-
-  return TRUE;
-  }
-
-
+//Given two parents, randomly partition the parents inputs
+//into the children. 
 void plane_crossover_allele_mixing(population *pop, 
         entity *father, entity *mother,
         entity *son, entity *daughter){
@@ -200,13 +137,10 @@ void plane_crossover_allele_mixing(population *pop,
             
 
 #define FAIL_PENALTY 10000
+//Given a flight, determine how good it is and store that 
+//value in the entity's fitness. 
 static boolean plane_score(population *pop, entity *entity){
-    printf("Entered score calculation, line %d.\n", __LINE__);
-    printf("Entity has address %d\n", entity);
     entity_chrom *mem = (entity_chrom *) entity->chromosome[0];
-    printf("Entity values: mem address %d\n", mem);
-    printf("Entity values: results address %d\n", mem->results);
-    printf("Chromosome length: %d\n", pop->len_chromosomes);
     int collideFrame = 
             runSimulation(mem->controllerInputs, 
                   mem->results, 
@@ -214,16 +148,14 @@ static boolean plane_score(population *pop, entity *entity){
                   pop->len_chromosomes);
     double penalty = 0;
     mem->collideFrame = collideFrame;
-    printf("Entered main, line %d.\n", __LINE__);
     if(collideFrame == -1){
         //We didn't even make it to the target x coordinate!
         //We should penalize this strongly!
-        penalty += pop->len_chromosomes; //It took you a long time.
         //How far was left to go in the x direction? 
         struct Result finalRes =  mem->results[pop->len_chromosomes-1];
         penalty += distance_to_go_x(finalRes.player);
         //You didn't make it. So get a fat penalty for that. 
-        penalty += FAIL_PENALTY;
+        penalty += FAIL_PENALTY * 2;
     }else{
         struct Result finalRes =  mem->results[collideFrame];
         if(finalRes.landed){
@@ -235,141 +167,83 @@ static boolean plane_score(population *pop, entity *entity){
             penalty += distance_to_go_x(finalRes.player);
         } else {
             //We hit the platform but didn't land. 
-            penalty += collideFrame;
+            penalty += FAIL_PENALTY;
             //Usually this will be near zero, but reward the simulation for 
-            //getting further anyway. 
+            //getting further anyway.
             penalty += distance_to_go_x(finalRes.player);
             //And now add in a y-component penalty.
-            penalty += distance_to_go_y(finalRes.player);
+            penalty += distance_to_go_y(finalRes.player)*10;
+            //At this point, prefer longer flights but only a bit.
+            penalty -= collideFrame / 50; 
         }
     }
     entity->fitness = -1.0*penalty;
-    printf("Calculated fitness, it's %f\n", entity->fitness);
+    //Since we account for failing to land at all with the penalty function
+    //there's no case where we'd need to return false. 
     return true;
 }
         
-     
+bool plane_generation_hook(int generation, population *pop){
+    entity *best;
+    best = ga_get_entity_from_rank(pop, 0);
+    int collide = ((entity_chrom *) best->chromosome[0])->collideFrame;
+    printf("Generation %d, Collided on %d, best fitness %f\n", generation, 
+        collide,    
+        best->fitness);
+    struct Player final;
+    if(collide == -1){
+        final = ((entity_chrom *)best->chromosome[0])
+                ->results[pop->len_chromosomes-1].player;
+    }else {
+        final = ((entity_chrom *)best->chromosome[0])
+                ->results[collide].player;
+    }
+    printf("\tdist_x: %f dist_y %f\n", distance_to_go_x(final),
+        distance_to_go_y(final));
+
+}
 
 int main(int argc, char **argv){
-    printf("Entered main, line %d.\n", __LINE__);
     random_init();
     struct Player initPlayer;
     initPlayer = init();
     
     population *pop = NULL;
-    //log_set_level(LOG_NORMAL);
     
     //Create a population with 10 individuals, each with 1 chromosome.
-    //(The third argument is ignored.)
-    printf("Entered main, line %d.\n", __LINE__);
-    pop = ga_population_new(10, 1, 50);
+    pop = ga_population_new(1000, 1, 800);
     if(!pop) die("Unable to allocate population.");
     
-    printf("Entered main, line %d.\n", __LINE__);
     pop->chromosome_constructor = plane_chromosome_constructor;
     pop->chromosome_destructor = plane_chromosome_destructor;
     pop->chromosome_replicate = plane_chromosome_replicate;
     pop->chromosome_to_bytes = NULL;
     pop->chromosome_from_bytes = NULL;
     pop->chromosome_to_string = NULL;
-    pop->generation_hook = NULL;
+    pop->generation_hook = plane_generation_hook;
     pop->iteration_hook = NULL;
     pop->data_destructor = NULL;
     pop->data_ref_incrementor = NULL;
     
-    printf("Entered main, line %d.\n", __LINE__);
     pop->evaluate = plane_score;
     pop->seed = plane_seed;
     pop->adapt = NULL;
-    pop->select_one = ga_select_one_random;
-    pop->select_two = ga_select_two_random;
+    pop->select_one = ga_select_one_aggressive;
+    pop->select_two = ga_select_two_aggressive;
     pop->mutate = plane_mutate_point_random;
     pop->crossover = plane_crossover_allele_mixing;
     pop->replace=NULL;
     pop->data = &initPlayer;
-    printf("Entered main, line %d.\n", __LINE__);
     ga_population_seed(pop);
     
-    printf("Population seeded, line %d.\n", __LINE__);
     //Set population parameters. 
     ga_population_set_parameters(pop, GA_SCHEME_DARWIN,
         GA_ELITISM_PARENTS_DIE,
-        0.2,
+        0.5,
         0.2,
         0.0);
-    printf("Begin evolution, line %d.\n", __LINE__);
-    ga_evolution(pop, 2);
-    printf("End evolution, line %d.\n", __LINE__);
+    ga_evolution(pop, 200);
     ga_extinction(pop);
-    printf("Entered main, line %d.\n", __LINE__);
     return EXIT_SUCCESS;
 }
-
-
-
-/**********************************************************************
-  main()
-  synopsis:	Erm?
-  parameters:
-  return:
-  updated:	19 Aug 2002
- **********************************************************************/
-
-int otherMain(int argc, char **argv)
-  {
-  int		i;			/* Loop over runs. */
-  population	*pop=NULL;		/* Population of solutions. */
-  char		*beststring=NULL;	/* Human readable form of best solution. */
-  size_t	beststrlen=0;		/* Length of beststring. */
-
-  for (i=0; i<50; i++)
-    {
-    random_seed(i);
-
-    pop = ga_genesis_char(
-       120,			/* const int              population_size */
-       1,			/* const int              num_chromo */
-       (int) strlen(target_text),	/* const int              len_chromo */
-       NULL,		 	/* GAgeneration_hook      generation_hook */
-       NULL,			/* GAiteration_hook       iteration_hook */
-       NULL,			/* GAdata_destructor      data_destructor */
-       NULL,			/* GAdata_ref_incrementor data_ref_incrementor */
-       struggle_score,		/* GAevaluate             evaluate */
-       ga_seed_printable_random,	/* GAseed                 seed */
-       NULL,			/* GAadapt                adapt */
-       ga_select_one_sus,	/* GAselect_one           select_one */
-       ga_select_two_sus,	/* GAselect_two           select_two */
-       ga_mutate_printable_singlepoint_drift,	/* GAmutate               mutate */
-       ga_crossover_char_allele_mixing,	/* GAcrossover            crossover */
-       NULL,			/* GAreplace		replace */
-       NULL			/* vpointer		User data */
-            );
-
-    ga_population_set_parameters(
-       pop,			/* population      *pop */
-       GA_SCHEME_DARWIN,	/* const ga_scheme_type     scheme */
-       GA_ELITISM_PARENTS_DIE,	/* const ga_elitism_type   elitism */
-       0.9,			/* double  crossover */
-       0.2,			/* double  mutation */
-       0.0              	/* double  migration */
-                              );
-
-    ga_evolution(
-       pop,			/* population      *pop */
-       500			/* const int       max_generations */
-              );
-
-    printf( "The solution with seed = %d was:\n", i );
-    beststring = ga_chromosome_char_to_string(pop, ga_get_entity_from_rank(pop,0), beststring, &beststrlen);
-    printf("%s\n", beststring);
-    printf( "With score = %f\n", ga_entity_get_fitness(ga_get_entity_from_rank(pop,0)) );
-
-    ga_extinction(pop);
-    }
-
-  s_free(beststring);
-
-  exit(EXIT_SUCCESS);
-  }
-
 

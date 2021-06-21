@@ -18,8 +18,8 @@ runTestSimulation: test_simulation player.dat
 player.dat: export_player.py ram.raw
 	python3 export_player.py > player.dat
 
-basic_struggle: basic_test.c run_simulation.o plane_physics.o
-	${CC} ${CFLAGS} ${GAUL_FLAGS} -obasic_struggle run_simulation.o plane_physics.o basic_test.c
+run_ga: run_ga.c run_simulation.o plane_physics.o
+	${CC} ${CFLAGS} ${GAUL_FLAGS} -orun_ga run_simulation.o plane_physics.o run_ga.c
 
-test_basic: basic_struggle
-	LD_LIBRARY_PATH=${GAUL_BASE}/lib ./basic_struggle < player.dat
+test_run: run_ga
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib ./run_ga < player.dat

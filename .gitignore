@@ -1,7 +1,9 @@
 **/*.o
+*.swp
 player.dat
 ram.raw
 test_simulation
+run_ga
 sample_sim/test_simulation
 sample_sim/struggle
 __pycache__

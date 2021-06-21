@@ -20,7 +20,6 @@ int runSimulation(int8_t *stickPositions,
                   struct Player *startPoint, 
                   int maxFrames){
     //Initialize the first frame of the output.
-    printf("In runSimulation, line %d\n", __LINE__);
     output[0].collided=false;
     output[0].landed = false;
     output[0].player = *startPoint;
@@ -32,7 +31,6 @@ int runSimulation(int8_t *stickPositions,
                  output + curFrame);
         if(output[curFrame].collided) return curFrame;
     }
-    printf("In runSimulation, line %d\n", __LINE__);
     return -1;
 }
 
