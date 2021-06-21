@@ -61,8 +61,6 @@ typedef struct {
 //This will add a custom memory buffer for temporary storage, 
 //and it will allocate (but not initialize) the chromosome. 
 bool plane_chromosome_constructor(population *pop, entity *embryo){
-    printf("Constructing an entity with address %d\n", embryo);
-    printf("Entered main, line %d.\n", __LINE__);
     int frameIdx; 
     if(!pop) die("No pointer to population!");
     if(!embryo) die("No pointer to adam element.");
@@ -89,7 +87,7 @@ bool plane_chromosome_constructor(population *pop, entity *embryo){
 }
 
 void plane_mutate_point_random(population *pop, entity *father, entity *son){
-    printf("Entered main, line %d.\n", __LINE__);
+    printf("Entered mutator, line %d.\n", __LINE__);
     //Select a frame that occurs before the simulation collides. 
     int collideFrame =((entity_chrom*) father->chromosome[0])->collideFrame;
     int maxFrame = pop->len_chromosomes;
@@ -109,7 +107,7 @@ void plane_mutate_point_random(population *pop, entity *father, entity *son){
 
 void plane_chromosome_replicate(const population *pop, 
         entity *src, entity *dest, const int chromosomeid){
-    printf("Entered main, line %d.\n", __LINE__);
+    printf("Entered chrom replicate, line %d.\n", __LINE__);
     if(!pop) die("No population passed in.");
     if(!src || !dest) die("Null entity passed.");
     if(!src->chromosome || !dest->chromosome) die("Entity passed with no chromosomes.");
@@ -125,11 +123,10 @@ void plane_chromosome_replicate(const population *pop,
 
 
 void plane_chromosome_destructor(population *pop, entity *corpse){
-    printf("Entered main, line %d.\n", __LINE__);
+    printf("Entered chrom destructor, line %d.\n", __LINE__);
     if(!pop) die("Null pointer to population passed.");
     if(!corpse) die("Null pointer to entity passed.");
     if(corpse->chromosome==NULL) die("Chromosome already deallocated.");
-    if(corpse->data == NULL) die("Entity has null data pointer.");
     //Note! Do not free startPoint, since that's a global pointer. 
     free(((entity_chrom *)corpse->chromosome[0])->results);
     free(((entity_chrom *) corpse->chromosome[0])->controllerInputs);
@@ -140,9 +137,7 @@ void plane_chromosome_destructor(population *pop, entity *corpse){
 //Given an entity (adam), randomly initialize a set of controller inputs.
 //(Before seeding, the inputs may be invalid.)
 boolean plane_seed(population *pop, entity *adam){
-    printf("Adam has address %d\n", adam);
-    printf("Adam has data address %d\n", adam->data);
-    printf("Entered main, line %d.\n", __LINE__);
+    printf("Entered seed, line %d and adam %d\n", __LINE__, adam);
     int frameIdx;
     for(frameIdx = 0; frameIdx < pop->len_chromosomes; frameIdx++){
         int nextValue = random_int(2*72 + 1); //(0-144, inclusive)
@@ -206,16 +201,16 @@ void plane_crossover_allele_mixing(population *pop,
 
 #define FAIL_PENALTY 10000
 static boolean plane_score(population *pop, entity *entity){
-    printf("Entered main, line %d.\n", __LINE__);
+    printf("Entered score calculation, line %d.\n", __LINE__);
     printf("Entity has address %d\n", entity);
     entity_chrom *mem = (entity_chrom *) entity->chromosome[0];
-    printf("Entered main, line %d.\n", __LINE__);
     printf("Entity values: mem address %d\n", mem);
     printf("Entity values: results address %d\n", mem->results);
+    printf("Chromosome length: %d\n", pop->len_chromosomes);
     int collideFrame = 
             runSimulation(mem->controllerInputs, 
                   mem->results, 
-                  &(mem->startPoint),
+                  mem->startPoint,
                   pop->len_chromosomes);
     double penalty = 0;
     mem->collideFrame = collideFrame;
@@ -249,6 +244,7 @@ static boolean plane_score(population *pop, entity *entity){
         }
     }
     entity->fitness = -1.0*penalty;
+    printf("Calculated fitness, it's %f\n", entity->fitness);
     return true;
 }
         
@@ -257,13 +253,16 @@ static boolean plane_score(population *pop, entity *entity){
 int main(int argc, char **argv){
     printf("Entered main, line %d.\n", __LINE__);
     random_init();
+    struct Player initPlayer;
+    initPlayer = init();
+    
     population *pop = NULL;
     //log_set_level(LOG_NORMAL);
     
     //Create a population with 10 individuals, each with 1 chromosome.
     //(The third argument is ignored.)
     printf("Entered main, line %d.\n", __LINE__);
-    pop = ga_population_new(10, 1, 0);
+    pop = ga_population_new(10, 1, 50);
     if(!pop) die("Unable to allocate population.");
     
     printf("Entered main, line %d.\n", __LINE__);
@@ -287,20 +286,20 @@ int main(int argc, char **argv){
     pop->mutate = plane_mutate_point_random;
     pop->crossover = plane_crossover_allele_mixing;
     pop->replace=NULL;
-
+    pop->data = &initPlayer;
     printf("Entered main, line %d.\n", __LINE__);
     ga_population_seed(pop);
     
-    printf("Entered main, line %d.\n", __LINE__);
+    printf("Population seeded, line %d.\n", __LINE__);
     //Set population parameters. 
     ga_population_set_parameters(pop, GA_SCHEME_DARWIN,
         GA_ELITISM_PARENTS_DIE,
         0.2,
         0.2,
         0.0);
-    printf("Entered main, line %d.\n", __LINE__);
+    printf("Begin evolution, line %d.\n", __LINE__);
     ga_evolution(pop, 2);
-    printf("Entered main, line %d.\n", __LINE__);
+    printf("End evolution, line %d.\n", __LINE__);
     ga_extinction(pop);
     printf("Entered main, line %d.\n", __LINE__);
     return EXIT_SUCCESS;
