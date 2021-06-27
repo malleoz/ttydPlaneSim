@@ -14,7 +14,7 @@ boolean plane_seed(population *pop, entity *adam){
 
 
 
-#define FAIL_PENALTY 10000
+#define FAIL_PENALTY 5000
 //Given a flight, determine how good it is and store that 
 //value in the entity's fitness. 
 //This one could definitely be changed to help drive the 
@@ -26,38 +26,38 @@ static boolean plane_score(population *pop, entity *entity){
                   mem->results, 
                   mem->startPoint,
                   pop->len_chromosomes);
-    double penalty = 0;
+    double score = 3*FAIL_PENALTY;
     mem->collideFrame = collideFrame;
     if(collideFrame == -1){
         //We didn't even make it to the target x coordinate!
         //We should penalize this strongly!
         //How far was left to go in the x direction? 
         struct Result finalRes =  mem->results[pop->len_chromosomes-1];
-        penalty += distance_to_go_x(finalRes.player);
+        score -= distance_to_go_x(finalRes.player);
         //You didn't make it. So get a fat penalty for that. 
-        penalty += FAIL_PENALTY * 2;
+        score -= FAIL_PENALTY * 2;
     }else{
         struct Result finalRes =  mem->results[collideFrame];
         if(finalRes.landed){
             //How long did it take you? 
-            penalty += collideFrame;
+            score -= collideFrame;
             //And how far beyond the platform were you? 
             //Note that this rewards going extra far. 
             //TODO: Add a weight to this parameter. 
-            penalty += distance_to_go_x(finalRes.player);
+            score -= distance_to_go_x(finalRes.player);
         } else {
             //We hit the platform but didn't land. 
-            penalty += FAIL_PENALTY;
+            score -= FAIL_PENALTY;
             //Usually this will be near zero, but reward the simulation for 
             //getting further anyway.
-            penalty += distance_to_go_x(finalRes.player);
+            //penalty += distance_to_go_x(finalRes.player);
             //And now add in a y-component penalty.
-            penalty += distance_to_go_y(finalRes.player)*10;
+            score -= distance_to_go_y(finalRes.player)*10;
             //At this point, prefer longer flights but only a bit.
-            penalty -= collideFrame / 50; 
+            score += collideFrame / 5.0; 
         }
     }
-    entity->fitness = -1.0*penalty;
+    entity->fitness = score;
     //Since we account for failing to land at all with the penalty function
     //there's no case where we'd need to return false. 
     return true;

@@ -66,4 +66,3 @@ void plane_chromosome_destructor(population *pop, entity *corpse){
 
 
 
-
