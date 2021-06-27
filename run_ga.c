@@ -20,39 +20,14 @@ typedef struct {
     int collideFrame;
 } entity_chrom;
 
-
-//Initialize an entity.
-//Allocate (but not initialize) the chromosome's result array and
-//stick positions array.
-//Copy the data pointer from pop into the embryo's startPoint. 
-bool plane_chromosome_constructor(population *pop, entity *embryo){
-    int frameIdx; 
-    if(!pop) die("No pointer to population!");
-    if(!embryo) die("No pointer to adam element.");
-    if(embryo->chromosome != NULL) die("This embryo was already initalized!");
-    int numFrames = pop->len_chromosomes;
-    entity_chrom *mem = malloc(sizeof(entity_chrom));
-    if(!mem) die("Failed to allocate memory.");
-    
-    struct Result *resultArray = malloc(numFrames * sizeof(struct Result));
-    if(!resultArray) die("Failed to allocate result array.");
-    mem->results = resultArray;
-    
-    int8_t *inputs = malloc(numFrames * sizeof(int8_t));
-    if(!resultArray) die("Failed to allocate result chromosome.");
-    mem->controllerInputs = inputs;
-    
-    mem->startPoint = (struct Player *) pop->data;    
-
-    embryo->chromosome = malloc(sizeof(entity_chrom *));
-    if(!embryo->chromosome) die("Could not allocate chromosomes array.");
-    embryo->chromosome[0] = mem;
- 
-    return true;
-}
+#include "boring_callbacks.c"
+#include "mutate_callbacks.c"
+#include "mixing_callbacks.c"
+#include "util_callbacks.c"
 
 //Randomly mutate one of the controller inputs in father and 
 //store the new chromosome in son. 
+//You may want to play with this one. I have a couple versions of this. 
 void plane_mutate_point_random(population *pop, entity *father, entity *son){
     //Select a frame that occurs before the simulation collides. 
     int collideFrame =((entity_chrom*) father->chromosome[0])->collideFrame;
@@ -70,37 +45,11 @@ void plane_mutate_point_random(population *pop, entity *father, entity *son){
     ((int8_t *)((entity_chrom *)son->chromosome[0])->controllerInputs)[mutate_point] = controllerInput;
 }
         
-//Copy the chromosome from src into dest. 
-//chromosomeid is ignored. 
-void plane_chromosome_replicate(const population *pop, 
-        entity *src, entity *dest, const int chromosomeid){
-    if(!pop) die("No population passed in.");
-    if(!src || !dest) die("Null entity passed.");
-    if(!src->chromosome || !dest->chromosome) die("Entity passed with no chromosomes.");
-    if(!src->chromosome[0] || !dest->chromosome[0]) die("Empty chromosomes.");
-    entity_chrom *srcChrom = (entity_chrom *) src->chromosome[0];
-    entity_chrom *destChrom = (entity_chrom *) dest->chromosome[0];
-    for(int i=0; i<pop->len_chromosomes; i++){
-        destChrom->controllerInputs[i] = srcChrom->controllerInputs[i];
-        destChrom->results[i] = srcChrom->results[i];
-        destChrom->collideFrame = srcChrom->collideFrame;
-    }
-}
 
-//Free the memory held by a chromosome. 
-void plane_chromosome_destructor(population *pop, entity *corpse){
-    if(!pop) die("Null pointer to population passed.");
-    if(!corpse) die("Null pointer to entity passed.");
-    if(corpse->chromosome==NULL) die("Chromosome already deallocated.");
-    //Note! Do not free startPoint, since that's a global pointer. 
-    free(((entity_chrom *)corpse->chromosome[0])->results);
-    free(((entity_chrom *) corpse->chromosome[0])->controllerInputs);
-    free(corpse->chromosome[0]);
-    free(corpse->chromosome);
-}
 
 //Given an entity (adam), randomly initialize a set of controller inputs.
 //(Before seeding, the inputs may be invalid.)
+//You may want to change this to start with a known-good flight path.
 boolean plane_seed(population *pop, entity *adam){
     int frameIdx;
     for(frameIdx = 0; frameIdx < pop->len_chromosomes; frameIdx++){
@@ -116,6 +65,7 @@ boolean plane_seed(population *pop, entity *adam){
 
 //Given two parents, randomly partition the parents inputs
 //into the children. 
+//This is one you might want to mess with. 
 void plane_crossover_allele_mixing(population *pop, 
         entity *father, entity *mother,
         entity *son, entity *daughter){
@@ -139,6 +89,8 @@ void plane_crossover_allele_mixing(population *pop,
 #define FAIL_PENALTY 10000
 //Given a flight, determine how good it is and store that 
 //value in the entity's fitness. 
+//This one could definitely be changed to help drive the 
+//simulation in the right direction. 
 static boolean plane_score(population *pop, entity *entity){
     entity_chrom *mem = (entity_chrom *) entity->chromosome[0];
     int collideFrame = 
@@ -182,7 +134,8 @@ static boolean plane_score(population *pop, entity *entity){
     //there's no case where we'd need to return false. 
     return true;
 }
-        
+
+//This is just a callback that's run at the end of each generation.         
 bool plane_generation_hook(int generation, population *pop){
     entity *best;
     best = ga_get_entity_from_rank(pop, 0);
