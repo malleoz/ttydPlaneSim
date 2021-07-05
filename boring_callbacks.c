@@ -22,7 +22,7 @@ bool plane_chromosome_constructor(population *pop, entity *embryo){
     if(!resultArray) die("Failed to allocate result chromosome.");
     mem->controllerInputs = inputs;
     
-    mem->startPoint = (struct Player *) pop->data;    
+    mem->startPoint = ((pop_data *) pop->data)->startPoint;    
 
     embryo->chromosome = malloc(sizeof(entity_chrom *));
     if(!embryo->chromosome) die("Could not allocate chromosomes array.");

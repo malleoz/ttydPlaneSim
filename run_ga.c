@@ -20,6 +20,11 @@ typedef struct {
     int collideFrame;
 } entity_chrom;
 
+typedef struct {
+    struct Player *startPoint;
+    FILE *outFile;
+} pop_data;
+
 
 //Pick two numbers less than maxSize. Store the smaller 
 //in start, and store the larger in end. 
@@ -47,11 +52,15 @@ int main(int argc, char **argv){
     random_init();
     struct Player initPlayer;
     initPlayer = init();
-    
+    pop_data popData;
+    popData.startPoint = &initPlayer;
+    popData.outFile = fopen("sim_results.txt", "w");
+
+
     population *pop = NULL;
     
     //Create a population with 10 individuals, each with 1 chromosome.
-    pop = ga_population_new(2000, 1, 700);
+    pop = ga_population_new(4000, 1, 700);
     if(!pop) die("Unable to allocate population.");
     
     pop->chromosome_constructor = plane_chromosome_constructor;
@@ -76,7 +85,7 @@ int main(int argc, char **argv){
     //pop->crossover = plane_crossover_allele_mixing;
     pop->crossover = plane_crossover_doublepoint;
     pop->replace=NULL;
-    pop->data = &initPlayer;
+    pop->data = &popData;
     ga_population_seed(pop);
     
     //Set population parameters. 
@@ -86,6 +95,7 @@ int main(int argc, char **argv){
         0.8,
         0.0);
     ga_evolution(pop, 5000);
+    fclose(popData.outFile);
     ga_extinction(pop);
     return EXIT_SUCCESS;
 }

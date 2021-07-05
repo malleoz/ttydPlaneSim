@@ -81,5 +81,12 @@ bool plane_generation_hook(int generation, population *pop){
     }
     printf("\tdist_x: %f dist_y %f\n", distance_to_go_x(final),
         distance_to_go_y(final));
+    FILE *outFile = ((pop_data *)pop->data)->outFile;
+    fprintf(outFile, "%d,%d,%f,%f,%f", generation, collide, best->fitness,
+            distance_to_go_x(final), distance_to_go_y(final));
+    for(int i = 0; i < (collide>0?collide:pop->len_chromosomes-1); i++){
+        fprintf(outFile, ",%d", ((entity_chrom *)best->chromosome[0])->controllerInputs[i]);
+    }
+    fprintf(outFile, "\n");
 
 }
