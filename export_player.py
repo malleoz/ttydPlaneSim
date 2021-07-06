@@ -45,8 +45,8 @@ def main(argc, argv):
     # Specify the X and Y position bound #
     # required in order to define what's #
     # considered a valid plane flight.   #
-    landingX = 483.0
-    landingY = 125.0
+    landingX = -467.7
+    landingY = 110.0
 
 
     # Export to stdout

@@ -23,6 +23,7 @@ typedef struct {
 typedef struct {
     struct Player *startPoint;
     FILE *outFile;
+    double lastScore;
 } pop_data;
 
 
@@ -55,12 +56,12 @@ int main(int argc, char **argv){
     pop_data popData;
     popData.startPoint = &initPlayer;
     popData.outFile = fopen("sim_results.txt", "w");
-
+    popData.lastScore = -1;
 
     population *pop = NULL;
     
     //Create a population with 10 individuals, each with 1 chromosome.
-    pop = ga_population_new(4000, 1, 700);
+    pop = ga_population_new(200, 1, 800);
     if(!pop) die("Unable to allocate population.");
     
     pop->chromosome_constructor = plane_chromosome_constructor;
@@ -77,9 +78,9 @@ int main(int argc, char **argv){
     pop->evaluate = plane_score;
     pop->seed = plane_seed;
     pop->adapt = NULL;
-    //pop->select_one = ga_select_one_aggressive;
-    pop->select_one = ga_select_one_roulette;
-    pop->select_two = ga_select_two_random;
+    pop->select_one = ga_select_one_randomrank;
+    //pop->select_one = ga_select_one_roulette;
+    pop->select_two = ga_select_two_aggressive;
     //pop->mutate = plane_mutate_point_random;
     pop->mutate = joint_mutate;
     //pop->crossover = plane_crossover_allele_mixing;
@@ -94,7 +95,8 @@ int main(int argc, char **argv){
         0.3,
         0.8,
         0.0);
-    ga_evolution(pop, 5000);
+    //Run a *lot* of cycles. This takes a long time to converge!     
+    ga_evolution_threaded(pop, 200000);
     fclose(popData.outFile);
     ga_extinction(pop);
     return EXIT_SUCCESS;
