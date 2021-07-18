@@ -64,7 +64,7 @@ int main(int argc, char **argv){
     population *pop = NULL;
     
     //Create a population with 10 individuals, each with 1 chromosome.
-    pop = ga_population_new(400, 1, 600);
+    pop = ga_population_new(1000, 1, 600);
     if(!pop) die("Unable to allocate population.");
     
     pop->chromosome_constructor = plane_chromosome_constructor;
@@ -97,7 +97,7 @@ int main(int argc, char **argv){
         //GA_ELITISM_PARENTS_SURVIVE,
         GA_ELITISM_ONE_PARENT_SURVIVES,
         0.7,
-        0.3,
+        0.7,
         0.0);
     //Run a *lot* of cycles. This takes a long time to converge!     
     ga_evolution_threaded(pop, 200000);

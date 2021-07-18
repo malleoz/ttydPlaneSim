@@ -45,14 +45,14 @@ static boolean plane_score(population *pop, entity *entity){
             //Note that this rewards going extra far. 
             //TODO: Add a weight to this parameter. 
             score -= distance_to_go_x(finalRes.player);
-            float prevY = 1e10;
+            /*float prevY = 1e10;
             for(int i = 0; i < collideFrame; i++){
                 struct Player curPlayer = mem->results[i].player;
                 if(curPlayer.position.y > prevY){
                     score -= 0.1;
                 }
                 prevY = curPlayer.position.y;
-            }
+            }*/
         } else {
             //We hit the platform but didn't land. 
             score -= FAIL_PENALTY;
@@ -61,16 +61,22 @@ static boolean plane_score(population *pop, entity *entity){
             //penalty += distance_to_go_x(finalRes.player);
             //And now add in a y-component penalty.
             score -= distance_to_go_y(finalRes.player)*10;
+            score += finalRes.player.baseSpeed * 100;
             //If you got extra far into the wall, that means you were moving faster. Reward that. 
+            
             score -= distance_to_go_x(finalRes.player);
             //At this point, prefer shorter flights but only a bit.
             score -= collideFrame * 1.0; 
             //Also add in a penalty if the flight has to go up. It should go just straight down. 
             float prevY = 1e10;
+            float numUpFrames = 1;
             for(int i = 0; i < collideFrame; i++){
                 struct Player curPlayer = mem->results[i].player;
                 if(curPlayer.position.y > prevY){
-                    score -= curPlayer.position.y - prevY;
+                    numUpFrames *= 1.1;
+                    score -= (numUpFrames * 0.1);
+                }else{
+                    numUpFrames = 1;
                 }
                 prevY = curPlayer.position.y;
             }

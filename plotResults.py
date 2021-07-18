@@ -23,7 +23,7 @@ inData = open("tmp_results.txt", "r")
 
 flights = [Flight(x) for x in inData]
 generations = [f.generation for f in flights]
-collideFrames = [f.collideFrame for f in flights]
+fitnesses = [f.fitness for f in flights]
 fig,((axInp, axX, axPos), (axVel, axY, axFrames)) = plt.subplots(nrows=2, ncols=3)
 
 """
@@ -81,5 +81,9 @@ axX.set_ylabel("x position")
 axY.set_xlim((0, AX_MAXVAL))
 axY.set_xlabel("frame")
 axY.set_ylabel("y position")
-axFrames.plot(generations, collideFrames, ".")
+axPos.set_xlabel("x position")
+axPos.set_ylabel("y position")
+axFrames.plot(generations, fitnesses, ".")
+axFrames.set_xlabel("Generation number")
+axFrames.set_ylabel("Fitness score")
 plt.show()
