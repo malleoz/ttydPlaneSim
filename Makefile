@@ -22,4 +22,4 @@ run_ga: run_ga.c run_simulation.o plane_physics.o boring_callbacks.c mixing_call
 	${CC} ${CFLAGS} ${GAUL_FLAGS} -orun_ga run_simulation.o plane_physics.o run_ga.c
 
 test_run: run_ga
-	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=5 ./run_ga < player.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=5 ./run_ga sim_results_2.txt < player.dat

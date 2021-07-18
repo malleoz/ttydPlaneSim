@@ -55,13 +55,16 @@ int main(int argc, char **argv){
     initPlayer = init();
     pop_data popData;
     popData.startPoint = &initPlayer;
-    popData.outFile = fopen("sim_results.txt", "w");
+    if(argc < 2){
+        die("Need to provide an output file name.");
+    }
+    popData.outFile = fopen(argv[1], "w");
     popData.lastScore = -1;
 
     population *pop = NULL;
     
     //Create a population with 10 individuals, each with 1 chromosome.
-    pop = ga_population_new(200, 1, 800);
+    pop = ga_population_new(400, 1, 600);
     if(!pop) die("Unable to allocate population.");
     
     pop->chromosome_constructor = plane_chromosome_constructor;
@@ -80,20 +83,21 @@ int main(int argc, char **argv){
     pop->adapt = NULL;
     pop->select_one = ga_select_one_randomrank;
     //pop->select_one = ga_select_one_roulette;
-    pop->select_two = ga_select_two_aggressive;
+    pop->select_two = ga_select_two_randomrank;
     //pop->mutate = plane_mutate_point_random;
     pop->mutate = joint_mutate;
     //pop->crossover = plane_crossover_allele_mixing;
-    pop->crossover = plane_crossover_doublepoint;
+    pop->crossover = plane_crossover_region_scaling;
     pop->replace=NULL;
     pop->data = &popData;
     ga_population_seed(pop);
     
     //Set population parameters. 
     ga_population_set_parameters(pop, GA_SCHEME_DARWIN,
+        //GA_ELITISM_PARENTS_SURVIVE,
         GA_ELITISM_ONE_PARENT_SURVIVES,
+        0.7,
         0.3,
-        0.8,
         0.0);
     //Run a *lot* of cycles. This takes a long time to converge!     
     ga_evolution_threaded(pop, 200000);

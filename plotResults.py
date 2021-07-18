@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np 
 import matplotlib.pyplot as plt
-
+import sys
 class Flight:
     def __init__(self, flightLine):
         dats = [float(x) for x in flightLine.split(',')]
@@ -19,50 +19,67 @@ class Flight:
         self.baseSpeed = smoosh_remaining[:,4]
     
 
-inData = open("sim_results.txt", "r")
+inData = open("tmp_results.txt", "r")
 
 flights = [Flight(x) for x in inData]
+generations = [f.generation for f in flights]
+collideFrames = [f.collideFrame for f in flights]
+fig,((axInp, axX, axPos), (axVel, axY, axFrames)) = plt.subplots(nrows=2, ncols=3)
 
-fig,((axInp, axX), (axVel, axY)) = plt.subplots(nrows=2, ncols=2)
+"""
 for flight in flights:
-    AX_MAXVAL=550
+    AX_MAXVAL=570
     axInp.cla()
-    axInp.plot(flight.controllerInput)
-    axInp.set_xlim((0, AX_MAXVAL))
-    axInp.set_ylim((-72, 72))
-
-    axVel.cla()
-    axVel.plot(flight.baseSpeed)
-    axVel.set_xlim((0, AX_MAXVAL))
-
-    axX.cla()
-    axX.plot(flight.xPos)
-    axX.set_xlim((0, AX_MAXVAL))
-
-    axY.cla()
-    axY.plot(flight.yPos)
-    axY.set_xlim((0, AX_MAXVAL))
-
-    plt.pause(0.1)
-
-axInp.cla()
-axX.cla()
-axVel.cla()
-axY.cla()
-        
-for flight in flights[len(flights)//2:]:
-    AX_MAXVAL=550
     axInp.plot(flight.controllerInput, '.')
     axInp.set_xlim((0, AX_MAXVAL))
     axInp.set_ylim((-72, 72))
 
+    axVel.cla()
     axVel.plot(flight.baseSpeed, '.')
     axVel.set_xlim((0, AX_MAXVAL))
 
+    axX.cla()
     axX.plot(flight.xPos, '.')
     axX.set_xlim((0, AX_MAXVAL))
 
-    axY.plot(flight.yPos,'.')
+    axY.cla()
+    axY.plot(flight.yPos, '.')
     axY.set_xlim((0, AX_MAXVAL))
 
+    plt.pause(0.1)
+"""
+axInp.cla()
+axX.cla()
+axVel.cla()
+axY.cla()
+sliceStart = 10 if len(sys.argv) > 1 else (int(len(flights)* 0.8))    
+for flight in flights[sliceStart:]:
+    if(flight == flights[-1]):
+        dispMode = '.'
+    else: 
+        dispMode = ','
+    axInp.plot(flight.controllerInput, dispMode)
+    axVel.plot(flight.baseSpeed, dispMode)
+    axX.plot(flight.xPos, dispMode)
+    axY.plot(flight.yPos, dispMode)
+    axPos.plot(flight.xPos, flight.yPos, dispMode)
+    
+
+
+
+AX_MAXVAL=550
+axInp.set_xlim((0, AX_MAXVAL))
+axInp.set_ylim((-72, 72))
+axInp.set_xlabel("Frame")
+axInp.set_ylabel("Controller position")
+axVel.set_xlim((0, AX_MAXVAL))
+axVel.set_xlabel("Frame")
+axVel.set_ylabel("Base speed")
+axX.set_xlim((0, AX_MAXVAL))
+axX.set_xlabel("frame")
+axX.set_ylabel("x position")
+axY.set_xlim((0, AX_MAXVAL))
+axY.set_xlabel("frame")
+axY.set_ylabel("y position")
+axFrames.plot(generations, collideFrames, ".")
 plt.show()

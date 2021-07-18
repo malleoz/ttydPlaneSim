@@ -11,13 +11,13 @@ void plane_mutate_point_random(population *pop, entity *father, entity *son){
     //Copy over the data. 
     pop->chromosome_replicate(pop, father, son, 0);
     //And perform the mutation. 
-    for(int i = 0; i < random_int(10)+1; i++){
+    //for(int i = 0; i < random_int(5)+1; i++){
         int mutate_point = random_int(maxFrame);
         int nextValue = random_int(2*72 + 1); //(0-144, inclusive)
         nextValue -= 72; //-72 to 72, inclusive.
         int8_t controllerInput = (int8_t) nextValue;
         ((int8_t *)((entity_chrom *)son->chromosome[0])->controllerInputs)[mutate_point] = controllerInput;
-    }
+    //}
 }
 
         
@@ -29,6 +29,9 @@ void plane_mutate_region_drift(population *pop, entity *father, entity *son){
     if(collideFrame <= 0) collideFrame=pop->len_chromosomes;
     int mutate_start, mutate_end;
     getSplitPoints(collideFrame, &mutate_start, &mutate_end);
+    if(mutate_end > mutate_start + 50){
+        mutate_end = mutate_start + 10;
+    }
     int8_t drift = random_int(50) - 25;
     //That will be in [-5, +4], so remove the zero shift case and 
     //make it from [-5,-1] U [1,5]
@@ -52,6 +55,9 @@ void plane_mutate_region_set(population *pop, entity *father, entity *son){
     if(collideFrame <= 0) collideFrame=pop->len_chromosomes;
     int mutate_start, mutate_end;
     getSplitPoints(collideFrame, &mutate_start, &mutate_end);
+    if(mutate_end - mutate_start > 80){
+        mutate_end = mutate_start + 10;
+    }
     int nextValue = random_int(2*72 + 1); //(0-144, inclusive)
     nextValue -= 72; //-72 to 72, inclusive.
     pop->chromosome_replicate(pop, father, son, 0);
@@ -89,7 +95,13 @@ void plane_mutate_dilate(population *pop, entity *father, entity *son){
             if(indel_mode){//Just move to the next input in the father.
                 continue;
             }else{//Duplicate the father at this position. 
-                sonInputs[writeHead] = fatherInputs[i];
+                int writeVal;
+                if(i < pop->len_chromosomes - 1){
+                    writeVal = ((int) fatherInputs[i] + (int) fatherInputs[i+1]) / 2;
+                }else{
+                    writeVal = fatherInputs[i];
+                }
+                sonInputs[writeHead] = writeVal;
                 if(++writeHead == pop->len_chromosomes) break; //We finished! 
             }
             curIndelPos++;
@@ -111,16 +123,14 @@ void plane_mutate_dilate(population *pop, entity *father, entity *son){
     
 //A combination of all the above methods, applied several times. 
 void joint_mutate(population *pop, entity *father, entity *son){
-    for(int i = 0; i < random_int(10)+1; i++){
-        int mode = random_int(10);
-        if(mode < 3){
-            plane_mutate_region_drift(pop, father, son);
-        }else if (mode < 5){
-            plane_mutate_region_set(pop, father, son);
-        }else if (mode < 8){
-            plane_mutate_dilate(pop, father, son);
-        }else{ 
-            plane_mutate_point_random(pop, father, son);
-        }
+    int mode = random_int(15);
+    if(mode < 5){
+        plane_mutate_region_drift(pop, father, son);
+    }else if (mode < 5){
+        plane_mutate_region_set(pop, father, son);
+    }else if (mode < 10){
+        plane_mutate_dilate(pop, father, son);
+    }else{ 
+        plane_mutate_point_random(pop, father, son);
     }
 }
