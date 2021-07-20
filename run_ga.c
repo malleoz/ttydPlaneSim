@@ -79,7 +79,7 @@ int main(int argc, char **argv){
     pop->data_ref_incrementor = NULL;
     
     pop->evaluate = plane_score;
-    pop->seed = plane_seed;
+    pop->seed = plane_seed_known_good;
     pop->adapt = NULL;
     pop->select_one = ga_select_one_randomrank;
     //pop->select_one = ga_select_one_roulette;

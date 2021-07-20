@@ -12,7 +12,21 @@ boolean plane_seed(population *pop, entity *adam){
     return true;
 }
 
-
+boolean plane_seed_known_good(population *pop, entity *adam){
+    //Fill it up with random data. 
+    plane_seed(pop, adam);
+    FILE * fp = fopen("goodInputs.csv", "r");
+    char inBuf[10];
+    int frameIdx = 0;
+    while(fgets(inBuf, 9, fp)){
+        //printf("Initializing with %d\n", atoi(inBuf));
+        ((entity_chrom *) adam->chromosome[0])->controllerInputs[frameIdx] = 
+            (int8_t) atoi(inBuf);
+        frameIdx++;
+    }
+    fclose(fp); 
+    return true;
+}
 
 #define FAIL_PENALTY 5000
 //Given a flight, determine how good it is and store that 
@@ -45,6 +59,7 @@ static boolean plane_score(population *pop, entity *entity){
             //Note that this rewards going extra far. 
             //TODO: Add a weight to this parameter. 
             score -= distance_to_go_x(finalRes.player);
+            score += finalRes.player.baseSpeed * 50;
             /*float prevY = 1e10;
             for(int i = 0; i < collideFrame; i++){
                 struct Player curPlayer = mem->results[i].player;

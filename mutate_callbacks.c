@@ -130,7 +130,7 @@ void joint_mutate(population *pop, entity *father, entity *son){
         plane_mutate_region_set(pop, father, son);
     }else if (mode < 10){
         plane_mutate_dilate(pop, father, son);
-    }else{ 
+    }else { 
         plane_mutate_point_random(pop, father, son);
     }
 }

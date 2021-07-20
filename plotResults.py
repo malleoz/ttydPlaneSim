@@ -52,7 +52,7 @@ axInp.cla()
 axX.cla()
 axVel.cla()
 axY.cla()
-sliceStart = 10 if len(sys.argv) > 1 else (int(len(flights)* 0.8))    
+sliceStart = int(sys.argv[1]) if len(sys.argv) > 1 else (int(len(flights)* 0.8))    
 for flight in flights[sliceStart:]:
     if(flight == flights[-1]):
         dispMode = '.'
