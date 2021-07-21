@@ -28,7 +28,7 @@ fig,((axInp, axX, axPos), (axVel, axY, axFrames)) = plt.subplots(nrows=2, ncols=
 
 """
 for flight in flights:
-    AX_MAXVAL=570
+    AX_MAXVAL=200
     axInp.cla()
     axInp.plot(flight.controllerInput, '.')
     axInp.set_xlim((0, AX_MAXVAL))
@@ -67,7 +67,7 @@ for flight in flights[sliceStart:]:
 
 
 
-AX_MAXVAL=550
+AX_MAXVAL=200
 axInp.set_xlim((0, AX_MAXVAL))
 axInp.set_ylim((-72, 72))
 axInp.set_xlabel("Frame")

@@ -21,5 +21,5 @@ player.dat: export_player.py ram.raw
 run_ga: run_ga.c run_simulation.o plane_physics.o boring_callbacks.c mixing_callbacks.c mutate_callbacks.c util_callbacks.c
 	${CC} ${CFLAGS} ${GAUL_FLAGS} -orun_ga run_simulation.o plane_physics.o run_ga.c
 
-test_run: run_ga
-	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=2 ./run_ga sim_results_4.txt < player.dat
+test_run: run_ga player.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=2 ./run_ga sim_results_5.txt < player.dat

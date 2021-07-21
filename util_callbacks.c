@@ -58,8 +58,8 @@ static boolean plane_score(population *pop, entity *entity){
             //And how far beyond the platform were you? 
             //Note that this rewards going extra far. 
             //TODO: Add a weight to this parameter. 
-            score -= distance_to_go_x(finalRes.player);
-            score += finalRes.player.baseSpeed * 50;
+            score -= distance_to_go_x(finalRes.player) / 10.;
+            //score += finalRes.player.baseSpeed * 50;
             /*float prevY = 1e10;
             for(int i = 0; i < collideFrame; i++){
                 struct Player curPlayer = mem->results[i].player;
