@@ -122,7 +122,7 @@ void neutralCalc(Player *player) {
 
     if (6.0 <= motStruct->rotationPivot.x) {
         debug_printf("[0x8009cf18] BRANCH NOT TAKEN\n");
-        motStruct->index5 = 6.0;
+        motStruct->index5 = 0.0;
     }
 }
 
@@ -319,7 +319,7 @@ void taildiveCalc(Player *player) {
         motStruct->rotationPivot.x = motStruct->rotationPivot.x + motStruct->index5;
         debug_printf("[0x8009d090] motStruct->rotationPivot.y [f0]:\t\t\t%10.6f\n", motStruct->rotationPivot.x);
 
-        if ((wIndex5 <= 0) && (player->baseSpeed <= 0.25)) {
+        if ((wIndex5 <= 0) && (player->baseSpeed <= 2.5)) {
             debug_printf("[0x8009d0b8] BRANCH NOT TAKEN\n");
 
             wIndex5 = -(player->baseSpeed * 0.4 - 5.0);
