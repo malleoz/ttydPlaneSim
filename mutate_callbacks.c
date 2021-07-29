@@ -1,3 +1,27 @@
+void plane_mutate_point_roundoff(population *pop, entity *father, entity *son){
+    //Select a frame that occurs before the simulation collides. 
+    int collideFrame =((entity_chrom*) father->chromosome[0])->collideFrame;
+    int maxFrame = pop->len_chromosomes;
+    if(collideFrame > 0) maxFrame = collideFrame;
+    if(!father || !son) die("Null pointer to entity passed.");
+    
+    //Copy over the data. 
+    pop->chromosome_replicate(pop, father, son, 0);
+    int mutate_point = random_int(maxFrame);
+    int8_t prev_value = ((entity_chrom *) father->chromosome[0])->controllerInputs[mutate_point];
+    int next_value;
+    if(prev_value < -25){
+        next_value = -72;
+    }else if(prev_value < 25){
+        next_value = 0;
+    }else{
+        next_value = 72;
+    }
+    int8_t controllerInput = (int8_t) next_value;
+    ((int8_t *)((entity_chrom *)son->chromosome[0])->controllerInputs)[mutate_point] = controllerInput;
+
+}
+
 //Randomly mutate one of the controller inputs in father and 
 //store the new chromosome in son. 
 //You may want to play with this one. I have a couple versions of this. 
@@ -80,8 +104,9 @@ void plane_mutate_dilate(population *pop, entity *father, entity *son){
     //TRUE means we're deleting. 
     //FALSE means we're inserting.
     int indel_mode = random_boolean();
-    int num_indels = random_int(10);
-    int indelPoses[10];
+    int num_indels = random_int(6);
+    num_indels *= num_indels;
+    int indelPoses[37];
     for(int i = 0; i < num_indels; i++){
         indelPoses[i] = random_int(pop->len_chromosomes-1);
     }
@@ -123,14 +148,18 @@ void plane_mutate_dilate(population *pop, entity *father, entity *son){
     
 //A combination of all the above methods, applied several times. 
 void joint_mutate(population *pop, entity *father, entity *son){
-    int mode = random_int(15);
-    if(mode < 5){
-        plane_mutate_region_drift(pop, father, son);
-    }else if (mode < 5){
-        plane_mutate_region_set(pop, father, son);
-    }else if (mode < 10){
-        plane_mutate_dilate(pop, father, son);
-    }else { 
-        plane_mutate_point_random(pop, father, son);
-    }
+    //for(int i = 0; i < random_int(10)+1; i++){
+        int mode = random_int(20);
+        if(mode < 3){
+            plane_mutate_region_drift(pop, father, son);
+        }else if (mode < 5){
+            plane_mutate_region_set(pop, father, son);
+        }else if (mode < 12){
+            plane_mutate_dilate(pop, father, son);
+        }else if (mode < 14){
+            plane_mutate_point_roundoff(pop, father, son);
+        }else { 
+            plane_mutate_point_random(pop, father, son);
+        }
+    //}
 }

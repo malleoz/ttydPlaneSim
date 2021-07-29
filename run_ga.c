@@ -24,6 +24,7 @@ typedef struct {
     struct Player *startPoint;
     FILE *outFile;
     double lastScore;
+    boolean seededGood; 
 } pop_data;
 
 
@@ -60,11 +61,11 @@ int main(int argc, char **argv){
     }
     popData.outFile = fopen(argv[1], "w");
     popData.lastScore = -1;
-
+    popData.seededGood = 0;
     population *pop = NULL;
     
     //Create a population with 10 individuals, each with 1 chromosome.
-    pop = ga_population_new(1000, 1, 600);
+    pop = ga_population_new(3000, 1, 330);
     if(!pop) die("Unable to allocate population.");
     
     pop->chromosome_constructor = plane_chromosome_constructor;
@@ -79,12 +80,13 @@ int main(int argc, char **argv){
     pop->data_ref_incrementor = NULL;
     
     pop->evaluate = plane_score;
-    pop->seed = plane_seed;
-    //pop->seed = plane_seed_known_good;
+    //pop->seed = plane_seed;
+    pop->seed = plane_seed_known_good;
     pop->adapt = NULL;
     pop->select_one = ga_select_one_randomrank;
-    //pop->select_one = ga_select_one_roulette;
+    //pop->select_one = ga_select_one_aggressive;
     pop->select_two = ga_select_two_randomrank;
+    //pop->select_two = ga_select_two_aggressive;
     //pop->mutate = plane_mutate_point_random;
     pop->mutate = joint_mutate;
     //pop->crossover = plane_crossover_allele_mixing;

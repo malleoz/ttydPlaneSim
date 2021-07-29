@@ -15,16 +15,19 @@ boolean plane_seed(population *pop, entity *adam){
 boolean plane_seed_known_good(population *pop, entity *adam){
     //Fill it up with random data. 
     plane_seed(pop, adam);
-    FILE * fp = fopen("goodInputs.csv", "r");
-    char inBuf[10];
-    int frameIdx = 0;
-    while(fgets(inBuf, 9, fp)){
-        //printf("Initializing with %d\n", atoi(inBuf));
-        ((entity_chrom *) adam->chromosome[0])->controllerInputs[frameIdx] = 
-            (int8_t) atoi(inBuf);
-        frameIdx++;
+    if(!((pop_data *)pop->data)->seededGood){
+        ((pop_data *)pop->data)->seededGood = 1;
+        FILE * fp = fopen("goodInputs.csv", "r");
+        char inBuf[10];
+        int frameIdx = 0;
+        while(fgets(inBuf, 9, fp)){
+            //printf("Initializing with %d\n", atoi(inBuf));
+            ((entity_chrom *) adam->chromosome[0])->controllerInputs[frameIdx] = 
+                (int8_t) atoi(inBuf);
+            frameIdx++;
+        }
+        fclose(fp); 
     }
-    fclose(fp); 
     return true;
 }
 
@@ -71,30 +74,28 @@ static boolean plane_score(population *pop, entity *entity){
         } else {
             //We hit the platform but didn't land. 
             score -= FAIL_PENALTY;
-            //Usually this will be near zero, but reward the simulation for 
-            //getting further anyway.
-            //penalty += distance_to_go_x(finalRes.player);
             //And now add in a y-component penalty.
             score -= distance_to_go_y(finalRes.player)*10;
-            score += finalRes.player.baseSpeed * 100;
+            //score += finalRes.player.baseSpeed * 1;
             //If you got extra far into the wall, that means you were moving faster. Reward that. 
             
-            score -= distance_to_go_x(finalRes.player);
+            //score -= distance_to_go_x(finalRes.player)*0.1;
             //At this point, prefer shorter flights but only a bit.
-            score -= collideFrame * 1.0; 
+            //score -= collideFrame * 0.1; 
+            
             //Also add in a penalty if the flight has to go up. It should go just straight down. 
-            float prevY = 1e10;
+            /*float prevY = 1e10;
             float numUpFrames = 1;
             for(int i = 0; i < collideFrame; i++){
                 struct Player curPlayer = mem->results[i].player;
                 if(curPlayer.position.y > prevY){
                     numUpFrames *= 1.1;
-                    score -= (numUpFrames * 0.1);
+                    score -= (numUpFrames * 0.02);
                 }else{
                     numUpFrames = 1;
                 }
                 prevY = curPlayer.position.y;
-            }
+            }*/
         }
     }
     entity->fitness = score;
@@ -124,7 +125,7 @@ bool plane_generation_hook(int generation, population *pop){
         FILE *outFile = ((pop_data *)pop->data)->outFile;
         fprintf(outFile, "%d,%d,%f,%f,%f", generation, collide, best->fitness,
                 distance_to_go_x(final), distance_to_go_y(final));
-        for(int i = 0; i < (collide); i++){
+        for(int i = 0; i <= (collide); i++){
             struct Player curPlayer = ((entity_chrom *)best->chromosome[0])->results[i].player;
             fprintf(outFile, ",%d,%f,%f,%f,%f", 
                 ((entity_chrom *)best->chromosome[0])->controllerInputs[i],

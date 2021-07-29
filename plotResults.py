@@ -20,15 +20,16 @@ class Flight:
     
 
 inData = open("tmp_results.txt", "r")
-
-flights = [Flight(x) for x in inData]
+lines = [x for x in inData]
+sliceStart = int(sys.argv[1]) if len(sys.argv) > 1 else (int(len(lines)* 0.8))    
+flights = [Flight(x) for x in lines[sliceStart:]]
 generations = [f.generation for f in flights]
 fitnesses = [f.fitness for f in flights]
 fig,((axInp, axX, axPos), (axVel, axY, axFrames)) = plt.subplots(nrows=2, ncols=3)
 
-"""
-for flight in flights:
-    AX_MAXVAL=200
+
+"""for flight in flights:
+    AX_MAXVAL=360
     axInp.cla()
     axInp.plot(flight.controllerInput, '.')
     axInp.set_xlim((0, AX_MAXVAL))
@@ -52,10 +53,12 @@ axInp.cla()
 axX.cla()
 axVel.cla()
 axY.cla()
-sliceStart = int(sys.argv[1]) if len(sys.argv) > 1 else (int(len(flights)* 0.8))    
-for flight in flights[sliceStart:]:
+sliceStart = int(sys.argv[1]) if len(sys.argv) > 1 else (int(len(flights)* 0.8))   
+finalXVals = []
+finalYVals = []
+for flight in flights:
     if(flight == flights[-1]):
-        dispMode = '.'
+        dispMode = '.-'
     else: 
         dispMode = ','
     axInp.plot(flight.controllerInput, dispMode)
@@ -63,13 +66,15 @@ for flight in flights[sliceStart:]:
     axX.plot(flight.xPos, dispMode)
     axY.plot(flight.yPos, dispMode)
     axPos.plot(flight.xPos, flight.yPos, dispMode)
+    finalXVals.append(flight.xPos[-1])
+    finalYVals.append(flight.yPos[-1])
     
 
+axPos.plot(finalXVals, finalYVals, '-')
 
-
-AX_MAXVAL=200
+AX_MAXVAL=400
 axInp.set_xlim((0, AX_MAXVAL))
-axInp.set_ylim((-72, 72))
+axInp.set_ylim((-73, 73))
 axInp.set_xlabel("Frame")
 axInp.set_ylabel("Controller position")
 axVel.set_xlim((0, AX_MAXVAL))

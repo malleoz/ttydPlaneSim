@@ -45,8 +45,12 @@ def main(argc, argv):
     # Specify the X and Y position bound #
     # required in order to define what's #
     # considered a valid plane flight.   #
-    landingX = -467.7
-    landingY = 110.0
+    #Values for the first plane panel, east of the thousand year door room. 
+    #landingX = -467.7
+    #landingY = 110.0
+    #Flurrie's plane panel.
+    landingX = 482.000
+    landingY = 100.000
 
 
     # Export to stdout
