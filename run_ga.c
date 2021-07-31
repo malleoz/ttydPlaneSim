@@ -80,8 +80,8 @@ int main(int argc, char **argv){
     pop->data_ref_incrementor = NULL;
     
     pop->evaluate = plane_score;
-    //pop->seed = plane_seed;
-    pop->seed = plane_seed_known_good;
+    pop->seed = plane_seed;
+    //pop->seed = plane_seed_known_good;
     pop->adapt = NULL;
     pop->select_one = ga_select_one_randomrank;
     //pop->select_one = ga_select_one_aggressive;
@@ -103,7 +103,7 @@ int main(int argc, char **argv){
         0.7,
         0.0);
     //Run a *lot* of cycles. This takes a long time to converge!     
-    ga_evolution_threaded(pop, 200000);
+    ga_evolution_threaded(pop, 20000000);
     fclose(popData.outFile);
     ga_extinction(pop);
     return EXIT_SUCCESS;
