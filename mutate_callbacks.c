@@ -1,3 +1,7 @@
+/*
+Pick a random point and set it to either -72, 0, or +72. 
+This drives the inputs toward extreme values that will have large effects. 
+*/
 void plane_mutate_point_roundoff(population *pop, entity *father, entity *son){
     //Select a frame that occurs before the simulation collides. 
     int collideFrame =((entity_chrom*) father->chromosome[0])->collideFrame;
@@ -24,7 +28,6 @@ void plane_mutate_point_roundoff(population *pop, entity *father, entity *son){
 
 //Randomly mutate one of the controller inputs in father and 
 //store the new chromosome in son. 
-//You may want to play with this one. I have a couple versions of this. 
 void plane_mutate_point_random(population *pop, entity *father, entity *son){
     //Select a frame that occurs before the simulation collides. 
     int collideFrame =((entity_chrom*) father->chromosome[0])->collideFrame;
@@ -35,13 +38,11 @@ void plane_mutate_point_random(population *pop, entity *father, entity *son){
     //Copy over the data. 
     pop->chromosome_replicate(pop, father, son, 0);
     //And perform the mutation. 
-    //for(int i = 0; i < random_int(5)+1; i++){
-        int mutate_point = random_int(maxFrame);
-        int nextValue = random_int(2*72 + 1); //(0-144, inclusive)
-        nextValue -= 72; //-72 to 72, inclusive.
-        int8_t controllerInput = (int8_t) nextValue;
-        ((int8_t *)((entity_chrom *)son->chromosome[0])->controllerInputs)[mutate_point] = controllerInput;
-    //}
+    int mutate_point = random_int(maxFrame);
+    int nextValue = random_int(2*72 + 1); //(0-144, inclusive)
+    nextValue -= 72; //-72 to 72, inclusive.
+    int8_t controllerInput = (int8_t) nextValue;
+    ((int8_t *)((entity_chrom *)son->chromosome[0])->controllerInputs)[mutate_point] = controllerInput;
 }
 
         
@@ -56,10 +57,10 @@ void plane_mutate_region_drift(population *pop, entity *father, entity *son){
     if(mutate_end > mutate_start + 50){
         mutate_end = mutate_start + 10;
     }
-    int8_t drift = random_int(50) - 25;
-    //That will be in [-5, +4], so remove the zero shift case and 
-    //make it from [-5,-1] U [1,5]
     pop->chromosome_replicate(pop, father, son, 0);
+    int8_t drift = random_int(50) - 25;
+    //That will be in [-25, +24], so remove the zero shift case and 
+    //make it from [-25,-1] U [1,25]
     if(drift >= 0) drift++;
     for(int pos = mutate_start; pos <= mutate_end; pos++){
         int8_t prev = ((entity_chrom *)father->chromosome[0])
@@ -92,6 +93,8 @@ void plane_mutate_region_set(population *pop, entity *father, entity *son){
     }
 }
 
+//Used by the sort in plane_mutate_dilate. 
+//It just compares two integers, nothing fancy. 
 int compInts(const void *elem1, const void *elem2){
     int f = *((int *)elem1);
     int s = *((int *)elem2);
@@ -105,7 +108,7 @@ void plane_mutate_dilate(population *pop, entity *father, entity *son){
     //FALSE means we're inserting.
     int indel_mode = random_boolean();
     int num_indels = random_int(6);
-    num_indels *= num_indels;
+    num_indels *= num_indels;//Square the number of indels to have a better distribution of the number of indels. 
     int indelPoses[37];
     for(int i = 0; i < num_indels; i++){
         indelPoses[i] = random_int(pop->len_chromosomes-1);
@@ -146,9 +149,8 @@ void plane_mutate_dilate(population *pop, entity *father, entity *son){
                 
     
     
-//A combination of all the above methods, applied several times. 
+//A combination of all the above methods.
 void joint_mutate(population *pop, entity *father, entity *son){
-    //for(int i = 0; i < random_int(10)+1; i++){
         int mode = random_int(20);
         if(mode < 3){
             plane_mutate_region_drift(pop, father, son);
@@ -161,5 +163,4 @@ void joint_mutate(population *pop, entity *father, entity *son){
         }else { 
             plane_mutate_point_random(pop, father, son);
         }
-    //}
 }

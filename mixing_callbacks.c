@@ -1,46 +1,3 @@
-//Given two parents, randomly partition the parents inputs
-//into the children. 
-//This is one you might want to mess with. 
-void plane_crossover_allele_mixing(population *pop, 
-        entity *father, entity *mother,
-        entity *son, entity *daughter){
-    if(!father || !mother || !son || !daughter) die("Null entities passed in.");
-    int8_t *father_chrom = (int8_t *) ((entity_chrom*)father->chromosome[0])->controllerInputs;
-    int8_t *mother_chrom = (int8_t *) ((entity_chrom *)mother->chromosome[0])->controllerInputs;
-    int8_t *son_chrom = (int8_t *) ((entity_chrom *)son->chromosome[0])->controllerInputs;
-    int8_t *daughter_chrom = (int8_t *) ((entity_chrom *)daughter->chromosome[0])->controllerInputs;
-    for(int i = 0; i < pop->len_chromosomes; i++){
-        if(random_boolean()){
-            son_chrom[i] = father_chrom[i];
-            daughter_chrom[i] = mother_chrom[i];
-        }else{
-            son_chrom[i] = mother_chrom[i];
-            daughter_chrom[i] = father_chrom[i];
-        }
-    }
-}
-
-
-void plane_crossover_doublepoint(population *pop,             
-        entity *father, entity *mother,
-        entity *son, entity *daughter){
-    if(!father || !mother || !son || !daughter) die("Null entities passed in.");
-    int8_t *father_chrom = (int8_t *) ((entity_chrom*)father->chromosome[0])->controllerInputs;
-    int8_t *mother_chrom = (int8_t *) ((entity_chrom *)mother->chromosome[0])->controllerInputs;
-    int8_t *son_chrom = (int8_t *) ((entity_chrom *)son->chromosome[0])->controllerInputs;
-    int8_t *daughter_chrom = (int8_t *) ((entity_chrom *)daughter->chromosome[0])->controllerInputs;
-    int cross_start, cross_end;
-    getSplitPoints(pop->len_chromosomes, &cross_start, &cross_end);
-    for(int pos = 0; pos < pop->len_chromosomes; pos++){
-        if(pos < cross_start || pos > cross_end){
-            son_chrom[pos] = father_chrom[pos];
-            daughter_chrom[pos] = mother_chrom[pos];
-        }else{
-            son_chrom[pos] = mother_chrom[pos];
-            daughter_chrom[pos] = father_chrom[pos];
-        }
-    }
-}
 
 void validateNumber(int value, int min, int max, char *name){
     if(value < min){
@@ -133,12 +90,9 @@ void plane_crossover_region_scaling(population *pop,
         sourceValue = mother_chrom[sourceIndex];
         nextValue = mother_chrom[sourceIndex+1];
         interpValue = nextValue * offset + sourceValue * (1-offset);
-        //if(sourceIndex > pop->len_chromosomes) 
-        //printf("%d %d %d %d %d %d %d\n", sourceIndex, cross_start_father, pos, cross_start_mother, len_father, len_mother, (int8_t) interpValue);
-        /*interpValue = sourceValue; */
         validateNumber((int8_t) interpValue, -72, 72, "daughter interp value.");
         validateNumber(pos, cross_start_mother, cross_end_mother, "Daughter write pos");
-        daughter_chrom[pos] = (int8_t) interpValue;//father_chrom[sourceIndex];
+        daughter_chrom[pos] = (int8_t) interpValue;
     }
     
     for(int pos = cross_start_father; pos < cross_end_father; pos++){
@@ -152,7 +106,7 @@ void plane_crossover_region_scaling(population *pop,
         interpValue = nextValue * offset + sourceValue *(1-offset);
         validateNumber((int8_t) interpValue, -72, 72, "son interp value.");
         validateNumber(pos, cross_start_father, cross_end_father, "Son write pos");
-        son_chrom[pos] = (int8_t) interpValue;// mother_chrom[sourceIndex];
+        son_chrom[pos] = (int8_t) interpValue;
     }
     
 }
