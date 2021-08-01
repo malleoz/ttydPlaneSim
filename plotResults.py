@@ -25,7 +25,10 @@ sliceStart = int(sys.argv[1]) if len(sys.argv) > 1 else (int(len(lines)* 0.8))
 flights = [Flight(x) for x in lines[sliceStart:]]
 generations = [f.generation for f in flights]
 fitnesses = [f.fitness for f in flights]
-fig,((axInp, axX, axPos), (axVel, axY, axFrames)) = plt.subplots(nrows=2, ncols=3)
+grid_space = 0.04
+gridspec = {"left" : grid_space, "right" : 1 - grid_space, "top" : 1 - grid_space, "bottom" : grid_space}
+fig,((axInp, axX, axPos), (axVel, axY, axFrames)) = \
+    plt.subplots(nrows=2, ncols=3, gridspec_kw = gridspec)
 
 
 AX_MAXVAL=600
@@ -56,9 +59,12 @@ axY.cla()
 sliceStart = int(sys.argv[1]) if len(sys.argv) > 1 else (int(len(flights)* 0.8))   
 finalXVals = []
 finalYVals = []
+from scipy.ndimage import gaussian_filter1d, median_filter
+filt = lambda x:  median_filter(x, 5)
 for flight in flights:
     if(flight == flights[-1]):
-        dispMode = '.-'
+        dispMode = '.'
+        axInp.plot(filt(flight.controllerInput), '-')
     else: 
         dispMode = ','
     axInp.plot(flight.controllerInput, dispMode)
