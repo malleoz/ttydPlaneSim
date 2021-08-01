@@ -9,27 +9,30 @@ boolean plane_seed(population *pop, entity *adam){
         int8_t controllerInput = (int8_t) nextValue;
         ((int8_t *)((entity_chrom *)adam ->chromosome[0])->controllerInputs)[frameIdx] = controllerInput;
     }
-    return true;
-}
-
-boolean plane_seed_known_good(population *pop, entity *adam){
-    //Fill it up with random data. 
-    plane_seed(pop, adam);
-    if(!((pop_data *)pop->data)->seededGood){
-        ((pop_data *)pop->data)->seededGood = 1;
-        FILE * fp = fopen("goodInputs.csv", "r");
-        char inBuf[10];
-        int frameIdx = 0;
-        while(fgets(inBuf, 9, fp)){
-            //printf("Initializing with %d\n", atoi(inBuf));
-            ((entity_chrom *) adam->chromosome[0])->controllerInputs[frameIdx] = 
-                (int8_t) atoi(inBuf);
-            frameIdx++;
+    //Now seed with known good inputs, if there are any. 
+    pop_data *pd = ((pop_data *)pop->data);
+    if(pd->goodControllerInputs != NULL){
+        //If we've already seeded one input, no need to seed any more. 
+        if(!pd->seededGood){
+            pd->seededGood = true;
+            char inBuf[10];
+            int frameIdx = 0;
+            while(fgets(inBuf, 9, pd->goodControllerInputs)){
+                //printf("Initializing with %d\n", atoi(inBuf));
+                ((entity_chrom *) adam->chromosome[0])->controllerInputs[frameIdx] = 
+                    (int8_t) atoi(inBuf);
+                frameIdx++;
+            }
         }
-        fclose(fp); 
     }
     return true;
 }
+
+/*boolean plane_seed_known_good(population *pop, entity *adam){
+    //Fill it up with random data. 
+    plane_seed(pop, adam);
+    return true;
+}*/
 
 #define FAIL_PENALTY 5000
 //Given a flight, determine how good it is and store that 

@@ -23,8 +23,9 @@ typedef struct {
 typedef struct {
     struct Player *startPoint;
     FILE *outFile;
+    FILE *goodControllerInputs;
     double lastScore;
-    boolean seededGood; 
+    boolean seededGood;
 } pop_data;
 
 
@@ -50,22 +51,26 @@ void getSplitPoints(int maxSize, int *start, int *end){
 #include "util_callbacks.c"
 
 
-int main(int argc, char **argv){
+//int main(int argc, char **argv){
+int run_ga(FILE * playerDat, FILE *goodControllerInputs, 
+        FILE *outputFile, int popSize, int maxFrames, 
+        int numGenerations){
+
     random_init();
     struct Player initPlayer;
-    initPlayer = init();
+    initPlayer = init(playerDat);
+    fclose(playerDat);
+
     pop_data popData;
     popData.startPoint = &initPlayer;
-    if(argc < 2){
-        die("Need to provide an output file name.");
-    }
-    popData.outFile = fopen(argv[1], "w");
+    popData.outFile = outputFile;
     popData.lastScore = -1;
-    popData.seededGood = 0;
+    popData.goodControllerInputs = goodControllerInputs;
+    popData.seededGood = false;
+
     population *pop = NULL;
     
-    //Create a population with 10 individuals, each with 1 chromosome.
-    pop = ga_population_new(3000, 1, 330);
+    pop = ga_population_new(popSize, 1, maxFrames);
     if(!pop) die("Unable to allocate population.");
     
     pop->chromosome_constructor = plane_chromosome_constructor;
@@ -103,7 +108,7 @@ int main(int argc, char **argv){
         0.7,
         0.0);
     //Run a *lot* of cycles. This takes a long time to converge!     
-    ga_evolution_threaded(pop, 20000000);
+    ga_evolution_threaded(pop, numGenerations);
     fclose(popData.outFile);
     ga_extinction(pop);
     return EXIT_SUCCESS;

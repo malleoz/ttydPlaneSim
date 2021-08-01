@@ -4,6 +4,7 @@ player.dat
 ram.raw
 test_simulation
 run_ga
+ga_main
 sample_sim/test_simulation
 sample_sim/struggle
 __pycache__

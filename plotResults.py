@@ -28,8 +28,8 @@ fitnesses = [f.fitness for f in flights]
 fig,((axInp, axX, axPos), (axVel, axY, axFrames)) = plt.subplots(nrows=2, ncols=3)
 
 
+AX_MAXVAL=600
 """for flight in flights:
-    AX_MAXVAL=360
     axInp.cla()
     axInp.plot(flight.controllerInput, '.')
     axInp.set_xlim((0, AX_MAXVAL))
@@ -72,7 +72,6 @@ for flight in flights:
 
 axPos.plot(finalXVals, finalYVals, '-')
 
-AX_MAXVAL=400
 axInp.set_xlim((0, AX_MAXVAL))
 axInp.set_ylim((-73, 73))
 axInp.set_xlabel("Frame")

@@ -49,8 +49,11 @@ def main(argc, argv):
     #landingX = -467.7
     #landingY = 110.0
     #Flurrie's plane panel.
-    landingX = 681.000
-    landingY = -15.000
+    landingX = 482.000
+    landingY = 100.000
+    #Gloomtail's door - the ultimate challenge! 
+    #landingX = 681.000
+    #landingY = -15
 
 
     # Export to stdout

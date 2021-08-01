@@ -20,29 +20,29 @@ float gPi;
 float landingX;
 float landingY;
 
-Player init() {
+Player init(FILE *playerDat) {
     gPi = 3.1415927;  // The game decides to round to 7 places
 
     Player player;
     player.baseSpeed = 1.0; // This is always true on init, no need to scan for it
 
     // Scan for cmdline arguments from export_player.py
-    scanf("%f", &player.position.x);
-    scanf("%f", &player.position.y);
-    scanf("%f", &player.position.z);
-    scanf("%u", &player.motStruct.flags);
-    scanf("%f", &player.motStruct.rotationPivot.x);
-    scanf("%f", &player.motStruct.rotationPivot.y);
-    scanf("%f", &player.motStruct.rotationPivot.z);
-    scanf("%f", &player.motStruct.index4);
-    scanf("%f", &player.motStruct.index5);
-    scanf("%f", &player.motStruct.ySpeed);
-    scanf("%f", &player.motStruct.index7);
-    scanf("%f", &player.motStruct.index8);
-    scanf("%f", &player.motStruct.index9);
-    scanf("%f", &landingX);
-    scanf("%f", &landingY);
-
+    fscanf(playerDat, "%f", &player.position.x);
+    fscanf(playerDat, "%f", &player.position.y);
+    fscanf(playerDat, "%f", &player.position.z);
+    fscanf(playerDat, "%u", &player.motStruct.flags);
+    fscanf(playerDat, "%f", &player.motStruct.rotationPivot.x);
+    fscanf(playerDat, "%f", &player.motStruct.rotationPivot.y);
+    fscanf(playerDat, "%f", &player.motStruct.rotationPivot.z);
+    fscanf(playerDat, "%f", &player.motStruct.index4);
+    fscanf(playerDat, "%f", &player.motStruct.index5);
+    fscanf(playerDat, "%f", &player.motStruct.ySpeed);
+    fscanf(playerDat, "%f", &player.motStruct.index7);
+    fscanf(playerDat, "%f", &player.motStruct.index8);
+    fscanf(playerDat, "%f", &player.motStruct.index9);
+    fscanf(playerDat, "%f", &landingX);
+    fscanf(playerDat, "%f", &landingY);
+    
     return player;
 }
 
