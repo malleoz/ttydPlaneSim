@@ -122,8 +122,8 @@ int run_ga(FILE * playerDat, FILE *goodControllerInputs,
         GA_ELITISM_ONE_PARENT_SURVIVES, //ga_elitism_type 
                     //Maybe consider using GA_ELITISM_PARENTS_SURVIVE, 
                     //but this incurs a performance penalty. 
-        0.7,    //double crossover - The frequency of the crossover events.
-        0.7,    //double mutation - The frequency of mutation events.
+        0.9,    //double crossover - The frequency of the crossover events.
+        0.9,    //double mutation - The frequency of mutation events.
         0.0);   //double migration - Only used when multiple populations
                     //exist, which is not the case here. 
 

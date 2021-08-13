@@ -48,3 +48,11 @@ grodus: ga_main playerdats/grodus.dat
 		--pop-size=2000 \
 		--max-frames=300 \
 		--num-generations=10000
+
+blooper: ga_main playerdats/blooper.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
+		--player-dat=playerdats/blooper.dat \
+		--output-file=test_blooper.txt \
+		--pop-size=10 \
+		--max-frames=300 \
+		--num-generations=10

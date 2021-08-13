@@ -55,8 +55,11 @@ def main(argc, argv):
     #landingX = 681.000
     #landingY = -15
     #Grodus platform
-    landingX = 595
-    landingY = -390
+    #landingX = 595
+    #landingY = -390
+    #Room heading to blooper.
+    landingX=515.0
+    landingY=25.0    
 
     # Export to stdout
 
