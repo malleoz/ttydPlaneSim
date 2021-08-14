@@ -53,6 +53,6 @@ blooper: ga_main playerdats/blooper.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/blooper.dat \
 		--output-file=test_blooper.txt \
-		--pop-size=10 \
-		--max-frames=300 \
-		--num-generations=10
+		--pop-size=3000 \
+		--max-frames=100 \
+		--num-generations=1000
