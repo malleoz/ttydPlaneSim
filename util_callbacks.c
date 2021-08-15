@@ -24,6 +24,8 @@ boolean plane_seed(population *pop, entity *adam){
             }
         }
     }
+    printf("SEED: Entity %d\n", ((entity_chrom *) adam->chromosome[0])->name);
+    print_entity(pop, adam);
     return true;
 }
 
@@ -68,6 +70,9 @@ static boolean plane_score(population *pop, entity *entity){
         }
     }
     entity->fitness = score;
+    printf("EVAL. Entity info:\n");
+    print_entity(pop, entity);
+    printf("Evaluation: %f\n", score); 
     //Since we account for failing to land at all with the penalty function
     //there's no case where we'd need to return false. 
     return true;
@@ -78,13 +83,14 @@ bool plane_generation_hook(int generation, population *pop){
     entity *best;
     best = ga_get_entity_from_rank(pop, 0);
     fprintf(stderr, "Generation %d\r", generation);
-    if(((pop_data *)pop->data)->lastScore != best->fitness){
+    if(((pop_data *)pop->data)->lastScore != best->fitness || 1){
         ((pop_data *)pop->data)->lastScore = best->fitness;
 
         int collide = ((entity_chrom *) best->chromosome[0])->collideFrame;
-        printf("Generation %d, Collided on %d, best fitness %f\n", generation, 
+        printf("Generation %d, Collided on %d, best fitness %f, entity %d\n", generation, 
             collide,    
-            best->fitness);
+            best->fitness,
+            ((entity_chrom *) best->chromosome[0])->name );
         struct Player final;
         if (collide == -1) collide = pop->len_chromosomes-1;
         final = ((entity_chrom *)best->chromosome[0])

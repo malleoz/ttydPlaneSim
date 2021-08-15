@@ -24,6 +24,9 @@ run_ga.o: run_ga.c run_simulation.o plane_physics.o boring_callbacks.c mixing_ca
 ga_main: ga_main.c run_ga.o run_ga.h
 	${CC} ${CFLAGS} ${GAUL_FLAGS} -oga_main ga_main.c run_ga.o run_simulation.o plane_physics.o ${CLIBS} ${GAUL_LIBS}
 
+simulate_single: simulate_single.c run_simulation.h plane_physics.h run_simulation.o plane_physics.o
+	${CC} ${CFLAGS} -osimulate_single simulate_single.c run_simulation.o plane_physics.o ${CLIBS}
+
 flurrie: ga_main playerdats/flurrie.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/flurrie.dat \
@@ -53,6 +56,6 @@ blooper: ga_main playerdats/blooper.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/blooper.dat \
 		--output-file=test_blooper.txt \
-		--pop-size=10 \
-		--max-frames=300 \
+		--pop-size=5 \
+		--max-frames=100 \
 		--num-generations=10

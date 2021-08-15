@@ -21,7 +21,15 @@ void plane_crossover_region_scaling(population *pop,
     int8_t *mother_chrom = (int8_t *) ((entity_chrom *)mother->chromosome[0])->controllerInputs;
     int8_t *son_chrom = (int8_t *) ((entity_chrom *)son->chromosome[0])->controllerInputs;
     int8_t *daughter_chrom = (int8_t *) ((entity_chrom *)daughter->chromosome[0])->controllerInputs;
-    
+    printf("Interpolation father %d mother %d son %d daughter %d\n", 
+            ((entity_chrom *) father->chromosome[0])->name,
+            ((entity_chrom *) mother->chromosome[0])->name,
+            ((entity_chrom *) son->chromosome[0])->name,
+            ((entity_chrom *) daughter->chromosome[0])->name);
+    printf("Father:\n");
+    print_entity(pop, father);
+    printf("Mother:\n");
+    print_entity(pop, mother);
     //Start by copying over the inputs. 
     for(int pos = 0; pos < pop->len_chromosomes; pos++){
         son_chrom[pos] = father_chrom[pos];
@@ -79,6 +87,7 @@ void plane_crossover_region_scaling(population *pop,
     len_father = cross_end_father - cross_start_father;
     validateNumber(len_father, 1, len_father_chrom, "Father length");
     validateNumber(len_mother, 1, len_mother_chrom, "Mother length");
+    printf("Father cross (%d, %d); mother cross (%d, %d)\n", cross_start_father, cross_end_father, cross_start_mother, cross_end_mother);
     //Now copy in the split to the daughter from the father
     for(int pos = cross_start_mother; pos < cross_end_mother; pos++){
         sourceIndex = cross_start_father + 
@@ -108,6 +117,11 @@ void plane_crossover_region_scaling(population *pop,
         validateNumber(pos, cross_start_father, cross_end_father, "Son write pos");
         son_chrom[pos] = (int8_t) interpValue;
     }
+    
+    printf("Son:\n");
+    print_entity(pop, son);
+    printf("Daughter:\n");
+    print_entity(pop, daughter);
     
 }
 

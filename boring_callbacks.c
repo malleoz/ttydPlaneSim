@@ -1,4 +1,14 @@
 
+void print_entity(population *pop, entity *entity){
+    int i;
+    entity_chrom *chrom = (entity_chrom *)entity->chromosome[0];
+    printf("%d\n", chrom->name);
+    for(i = 0; i < pop->len_chromosomes; i++){
+        printf("%d ", chrom->controllerInputs[i]);
+    }
+    printf("\n");
+}
+
 //Initialize an entity.
 //Allocate (but not initialize) the chromosome's result array and
 //stick positions array.
@@ -22,12 +32,17 @@ bool plane_chromosome_constructor(population *pop, entity *embryo){
     if(!resultArray) die("Failed to allocate result chromosome.");
     mem->controllerInputs = inputs;
     
-    mem->startPoint = ((pop_data *) pop->data)->startPoint;    
-
+    mem->startPoint = ((pop_data *) pop->data)->startPoint;
+    //Note the ++ here: every chromosome will get a unique name.
+    mem->name = ((pop_data *) pop->data)->curName++;
+    printf("CONSTRUCTOR: %d\n", mem->name);
+    if(mem->name >= 10000){
+        die("Too many chromosomes allocated.");
+    }
     embryo->chromosome = malloc(sizeof(entity_chrom *));
     if(!embryo->chromosome) die("Could not allocate chromosomes array.");
     embryo->chromosome[0] = mem;
- 
+    
     return true;
 }
         
@@ -43,6 +58,7 @@ void plane_chromosome_replicate(const population *pop,
     if(!src->chromosome[0] || !dest->chromosome[0]) die("Empty chromosomes.");
     entity_chrom *srcChrom = (entity_chrom *) src->chromosome[0];
     entity_chrom *destChrom = (entity_chrom *) dest->chromosome[0];
+    printf("REPLICATE: %d -> %d\n", srcChrom->name, destChrom->name);
     for(int i=0; i<pop->len_chromosomes; i++){
         destChrom->controllerInputs[i] = srcChrom->controllerInputs[i];
         destChrom->results[i] = srcChrom->results[i];
@@ -58,6 +74,7 @@ void plane_chromosome_destructor(population *pop, entity *corpse){
     if(!corpse) die("Null pointer to entity passed.");
     if(corpse->chromosome==NULL) die("Chromosome already deallocated.");
     //Note! Do not free startPoint, since that's a global pointer. 
+    printf("DESTRUCTOR: %d\n", ((entity_chrom *)corpse->chromosome[0])->name);
     free(((entity_chrom *)corpse->chromosome[0])->results);
     free(((entity_chrom *) corpse->chromosome[0])->controllerInputs);
     free(corpse->chromosome[0]);

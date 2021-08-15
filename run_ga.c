@@ -18,6 +18,7 @@ typedef struct {
     //After running the simulation, this is the frame where it
     //hit the target platform, or -1 if it failed. 
     int collideFrame;
+    int name;
 } entity_chrom;
 
 typedef struct {   
@@ -42,6 +43,7 @@ typedef struct {
     double lastScore;
     //Has one of the chromosomes been seeded with known good inputs? 
     boolean seededGood;
+    int curName;
 } pop_data;
 
 
@@ -84,7 +86,7 @@ int run_ga(FILE * playerDat, FILE *goodControllerInputs,
     popData.lastScore = -1;
     popData.goodControllerInputs = goodControllerInputs;
     popData.seededGood = false;
-
+    popData.curName = 0;    
     population *pop;
     
     pop = ga_population_new(popSize, 1, maxFrames);
@@ -132,7 +134,7 @@ int run_ga(FILE * playerDat, FILE *goodControllerInputs,
     //(Or you're struggling to debug the multithreaded program 
     //and want something simpler to debug), change this to 
     //ga_evolution(pop, numGenerations);
-    ga_evolution_threaded(pop, numGenerations);
+    ga_evolution(pop, numGenerations);
 
     fclose(popData.outFile);
     ga_extinction(pop);

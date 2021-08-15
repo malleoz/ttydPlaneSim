@@ -151,16 +151,27 @@ void plane_mutate_dilate(population *pop, entity *father, entity *son){
     
 //A combination of all the above methods.
 void joint_mutate(population *pop, entity *father, entity *son){
+        printf("JOINT_MUTATE %d into %d. Initial: \n", 
+            ((entity_chrom *)father->chromosome[0])->name,
+            ((entity_chrom *)son->chromosome[0])->name);
+        print_entity(pop, father);
         int mode = random_int(20);
         if(mode < 3){
+            printf("Region drift.\n");
             plane_mutate_region_drift(pop, father, son);
         }else if (mode < 5){
+            printf("Region set.\n");
             plane_mutate_region_set(pop, father, son);
         }else if (mode < 12){
+            printf("dilate\n");
             plane_mutate_dilate(pop, father, son);
         }else if (mode < 14){
+            printf("roundoff\n");
             plane_mutate_point_roundoff(pop, father, son);
         }else { 
+            printf("Point random\n");
             plane_mutate_point_random(pop, father, son);
         }
+    printf("Final:\n");
+    print_entity(pop, son);
 }
