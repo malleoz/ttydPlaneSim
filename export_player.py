@@ -9,6 +9,7 @@ FLAGS.DefineString("in", "ram.raw")        # Filepath to Dolphin RAM dump
 
 getMarioPtr = { "U": 0x8041e900}
 posOffset = 0x8C
+baseSpeedOffset = 0x180
 motOffset = 0x294
 
 def main(argc, argv):
@@ -23,6 +24,8 @@ def main(argc, argv):
     yPos = marioPtrStore.rfloat(posOffset + 4)
     zPos = marioPtrStore.rfloat(posOffset + 8)
     
+    baseSpeed = marioPtrStore.rfloat(baseSpeedOffset)
+    
     motPtr = marioPtrStore.rptr(motOffset)
     motPtrStore = dat.at(motPtr)
 
@@ -34,7 +37,7 @@ def main(argc, argv):
     motZRot   = motPtrStore.rfloat(0xC)
     motIndex4 = motPtrStore.rfloat(0x10)
     motIndex5 = motPtrStore.rfloat(0x14)
-    motIndex6 = motPtrStore.rfloat(0x18)
+    ySpeed    = motPtrStore.rfloat(0x18)
     motIndex7 = motPtrStore.rfloat(0x1C)
     motIndex8 = motPtrStore.rfloat(0x20)
     motIndex9 = motPtrStore.rfloat(0x24)
@@ -55,21 +58,22 @@ def main(argc, argv):
     #landingX = 681.000
     #landingY = -15
     #Grodus platform
-    landingX = 595
-    landingY = -390
+    landingX = 515
+    landingY = 25
 
     # Export to stdout
 
     sys.stdout.write("%.9g " % xPos)
     sys.stdout.write("%.9g " % yPos)
     sys.stdout.write("%.9g " % zPos)
+    sys.stdout.write("%.9g " % baseSpeed)
     sys.stdout.write("%d " % motFlags)
     sys.stdout.write("%.9g " % motXRot)
     sys.stdout.write("%.9g " % motYRot)
     sys.stdout.write("%.9g " % motZRot)
     sys.stdout.write("%.9g " % motIndex4)
     sys.stdout.write("%.9g " % motIndex5)
-    sys.stdout.write("%.9g " % motIndex6)
+    sys.stdout.write("%.9g " % ySpeed)
     sys.stdout.write("%.9g " % motIndex7)
     sys.stdout.write("%.9g " % motIndex8)
     sys.stdout.write("%.9g " % motIndex9)
