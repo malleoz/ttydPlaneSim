@@ -26,6 +26,7 @@ struct Player {
     struct Vector wRotationRelated;
     float wDirectionView;
     struct Vector position;
+    struct Vector speed;
     double dispDirectionCurrent;
     struct MotStruct motStruct;
     int8_t stickPosition; // -72 to +72 inclusive

@@ -3,17 +3,22 @@ import sys
 import flags
 import bindatastore as bin
 
+# python3 export_player.py --landingX 300 --landingY 100 --ram ram/flurrie.raw
+
 FLAGS = flags.Flags()
-FLAGS.DefineString("in", "ram.raw")        # Filepath to Dolphin RAM dump
+FLAGS.DefineString("ram", "ram.raw")        # Filepath to Dolphin RAM dump
+FLAGS.DefineInt("landingX")
+FLAGS.DefineInt("landingY")
 #FLAGS.DefineString("region", "U")   # Game version (U or J)
 
 getMarioPtr = { "U": 0x8041e900}
 posOffset = 0x8C
+baseSpeedOffset = 0x180
 motOffset = 0x294
 
 def main(argc, argv):
     dat = bin.BDStore(big_endian=True)
-    dat.RegisterFile(FLAGS.GetFlag("in"), offset=0x80000000)
+    dat.RegisterFile(FLAGS.GetFlag("ram"), offset=0x80000000)
     getMarioPtrStore = dat.at(getMarioPtr["U"])
     marioPtr = getMarioPtrStore.rptr()
     marioPtrStore = dat.at(marioPtr)
@@ -22,6 +27,8 @@ def main(argc, argv):
     xPos = marioPtrStore.rfloat(posOffset)
     yPos = marioPtrStore.rfloat(posOffset + 4)
     zPos = marioPtrStore.rfloat(posOffset + 8)
+    
+    baseSpeed = marioPtrStore.rfloat(baseSpeedOffset)
     
     motPtr = marioPtrStore.rptr(motOffset)
     motPtrStore = dat.at(motPtr)
@@ -34,7 +41,7 @@ def main(argc, argv):
     motZRot   = motPtrStore.rfloat(0xC)
     motIndex4 = motPtrStore.rfloat(0x10)
     motIndex5 = motPtrStore.rfloat(0x14)
-    motIndex6 = motPtrStore.rfloat(0x18)
+    ySpeed    = motPtrStore.rfloat(0x18)
     motIndex7 = motPtrStore.rfloat(0x1C)
     motIndex8 = motPtrStore.rfloat(0x20)
     motIndex9 = motPtrStore.rfloat(0x24)
@@ -58,21 +65,26 @@ def main(argc, argv):
     #landingX = 595
     #landingY = -390
     #Room heading to blooper.
-    landingX=515.0
-    landingY=25.0    
+    #landingX=515.0
+    #landingY=25.0    
+    landingX = FLAGS.GetFlag("landingX")
+    landingY = FLAGS.GetFlag("landingY")
+    if landingX is None or landingY is None:
+        print("A proper landing position was not provided.")
 
     # Export to stdout
 
     sys.stdout.write("%.9g " % xPos)
     sys.stdout.write("%.9g " % yPos)
     sys.stdout.write("%.9g " % zPos)
+    sys.stdout.write("%.9g " % baseSpeed)
     sys.stdout.write("%d " % motFlags)
     sys.stdout.write("%.9g " % motXRot)
     sys.stdout.write("%.9g " % motYRot)
     sys.stdout.write("%.9g " % motZRot)
     sys.stdout.write("%.9g " % motIndex4)
     sys.stdout.write("%.9g " % motIndex5)
-    sys.stdout.write("%.9g " % motIndex6)
+    sys.stdout.write("%.9g " % ySpeed)
     sys.stdout.write("%.9g " % motIndex7)
     sys.stdout.write("%.9g " % motIndex8)
     sys.stdout.write("%.9g " % motIndex9)
