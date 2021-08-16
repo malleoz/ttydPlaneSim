@@ -3,8 +3,12 @@ import sys
 import flags
 import bindatastore as bin
 
+# python3 export_player.py --landingX 300 --landingY 100 --ram ram/flurrie.raw
+
 FLAGS = flags.Flags()
-FLAGS.DefineString("in", "ram.raw")        # Filepath to Dolphin RAM dump
+FLAGS.DefineString("ram", "ram.raw")        # Filepath to Dolphin RAM dump
+FLAGS.DefineInt("landingX")
+FLAGS.DefineInt("landingY")
 #FLAGS.DefineString("region", "U")   # Game version (U or J)
 
 getMarioPtr = { "U": 0x8041e900}
@@ -14,7 +18,7 @@ motOffset = 0x294
 
 def main(argc, argv):
     dat = bin.BDStore(big_endian=True)
-    dat.RegisterFile(FLAGS.GetFlag("in"), offset=0x80000000)
+    dat.RegisterFile(FLAGS.GetFlag("ram"), offset=0x80000000)
     getMarioPtrStore = dat.at(getMarioPtr["U"])
     marioPtr = getMarioPtrStore.rptr()
     marioPtrStore = dat.at(marioPtr)
@@ -61,8 +65,12 @@ def main(argc, argv):
     #landingX = 595
     #landingY = -390
     #Room heading to blooper.
-    landingX=515.0
-    landingY=25.0    
+    #landingX=515.0
+    #landingY=25.0    
+    landingX = FLAGS.GetFlag("landingX")
+    landingY = FLAGS.GetFlag("landingY")
+    if landingX is None or landingY is None:
+        print("A proper landing position was not provided.")
 
     # Export to stdout
 
