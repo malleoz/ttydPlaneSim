@@ -24,12 +24,12 @@ Player init(FILE *playerDat) {
     gPi = 3.1415927;  // The game decides to round to 7 places
 
     Player player;
-    player.baseSpeed = 1.0; // This is always true on init, no need to scan for it
 
     // Scan for cmdline arguments from export_player.py
     fscanf(playerDat, "%f", &player.position.x);
     fscanf(playerDat, "%f", &player.position.y);
     fscanf(playerDat, "%f", &player.position.z);
+    fscanf(playerDat, "%f", &player.baseSpeed);
     fscanf(playerDat, "%u", &player.motStruct.flags);
     fscanf(playerDat, "%f", &player.motStruct.rotationPivot.x);
     fscanf(playerDat, "%f", &player.motStruct.rotationPivot.y);
@@ -42,7 +42,7 @@ Player init(FILE *playerDat) {
     fscanf(playerDat, "%f", &player.motStruct.index9);
     fscanf(playerDat, "%f", &landingX);
     fscanf(playerDat, "%f", &landingY);
-    
+   
     return player;
 }
 
