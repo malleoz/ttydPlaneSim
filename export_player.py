@@ -3,8 +3,12 @@ import sys
 import flags
 import bindatastore as bin
 
+# python3 export_player.py --landingX 300 --landingY 100 --ram ram/flurrie.raw
+
 FLAGS = flags.Flags()
-FLAGS.DefineString("in", "ram.raw")        # Filepath to Dolphin RAM dump
+FLAGS.DefineString("ram", "ram.raw")        # Filepath to Dolphin RAM dump
+FLAGS.DefineInt("landingX")
+FLAGS.DefineInt("landingY")
 #FLAGS.DefineString("region", "U")   # Game version (U or J)
 
 getMarioPtr = { "U": 0x8041e900}
@@ -14,7 +18,7 @@ motOffset = 0x294
 
 def main(argc, argv):
     dat = bin.BDStore(big_endian=True)
-    dat.RegisterFile(FLAGS.GetFlag("in"), offset=0x80000000)
+    dat.RegisterFile(FLAGS.GetFlag("ram"), offset=0x80000000)
     getMarioPtrStore = dat.at(getMarioPtr["U"])
     marioPtr = getMarioPtrStore.rptr()
     marioPtrStore = dat.at(marioPtr)
@@ -48,18 +52,10 @@ def main(argc, argv):
     # Specify the X and Y position bound #
     # required in order to define what's #
     # considered a valid plane flight.   #
-    #Values for the first plane panel, east of the thousand year door room. 
-    #landingX = -467.7
-    #landingY = 110.0
-    #Flurrie's plane panel.
-    #landingX = 482.000
-    #landingY = 100.000
-    #Gloomtail's door - the ultimate challenge! 
-    #landingX = 681.000
-    #landingY = -15
-    #Grodus platform
-    landingX = 515
-    landingY = 25
+    landingX = FLAGS.GetFlag("landingX")
+    landingY = FLAGS.GetFlag("landingY")
+    if landingX is None or landingY is None:
+        print("A proper landing position was not provided.")
 
     # Export to stdout
 
