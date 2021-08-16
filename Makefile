@@ -9,28 +9,31 @@ CFLAGS = -g -O3
 CLIBS = -lm
 GAUL_LIBS = -lgaul -lgaul_util
 GAUL_THREADS = 4
+OBJ_DIR = obj
+SRC_DIR = src
 
-test_simulation: run_simulation.o plane_physics.o test_simulation.c
-	${CC} ${CFLAGS} -otest_simulation run_simulation.o plane_physics.o test_simulation.c ${CLIBS}
+test_simulation: ${OBJ_DIR}/run_simulation.o ${OBJ_DIR}/plane_physics.o ${SRC_DIR}/test_simulation.c
+	${CC} ${CFLAGS} -o$@ $^ ${CLIBS}
 
-run_simulation.o: run_simulation.c run_simulation.h plane_physics.h plane_physics.o
-	${CC} ${CFLAGS} -c -o run_simulation.o run_simulation.c ${CLIBS}
-plane_physics.o: plane_physics.h plane_physics.c
-	${CC} ${CFLAGS} -c -o plane_physics.o plane_physics.c ${CLIBS}
+${OBJ_DIR}/run_simulation.o: ${SRC_DIR}/run_simulation.c ${SRC_DIR}/run_simulation.h ${SRC_DIR}/plane_physics.h ${OBJ_DIR}/plane_physics.o
+	${CC} ${CFLAGS} -c -o$@ ${SRC_DIR}/run_simulation.c ${CLIBS}
 
-run_ga.o: run_ga.c run_simulation.o plane_physics.o boring_callbacks.c mixing_callbacks.c mutate_callbacks.c util_callbacks.c
-	${CC} ${CFLAGS} ${GAUL_FLAGS} -c -o run_ga.o run_ga.c ${CLIBS} ${GAUL_LIBS}
+${OBJ_DIR}/plane_physics.o: ${SRC_DIR}/plane_physics.h ${SRC_DIR}/plane_physics.c
+	${CC} ${CFLAGS} -c -o$@ ${SRC_DIR}/plane_physics.c ${CLIBS}
 
-ga_main: ga_main.c run_ga.o run_ga.h
-	${CC} ${CFLAGS} ${GAUL_FLAGS} -oga_main ga_main.c run_ga.o run_simulation.o plane_physics.o ${CLIBS} ${GAUL_LIBS}
+${OBJ_DIR}/run_ga.o: ${SRC_DIR}/run_ga.c ${SRC_DIR}/run_ga.h ${OBJ_DIR}/run_simulation.o ${OBJ_DIR}/plane_physics.o ${SRC_DIR}/boring_callbacks.c ${SRC_DIR}/mixing_callbacks.c ${SRC_DIR}/mutate_callbacks.c ${SRC_DIR}/util_callbacks.c
+	${CC} ${CFLAGS} ${GAUL_FLAGS} -c -o$@ ${SRC_DIR}/run_ga.c ${CLIBS} ${GAUL_LIBS}
+
+ga_main: ${SRC_DIR}/ga_main.c ${OBJ_DIR}/run_ga.o ${OBJ_DIR}/run_simulation.o ${OBJ_DIR}/plane_physics.o
+	${CC} ${CFLAGS} ${GAUL_FLAGS} -o$@ $^ ${CLIBS} ${GAUL_LIBS}
 
 flurrie: ga_main playerdats/flurrie.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/flurrie.dat \
 		--output-file=test_flurrie.txt \
-		--pop-size=100 \
-		--max-frames=300 \
-		--num-generations=100
+		--pop-size=1000 \
+		--max-frames=400 \
+		--num-generations=1000
 
 
 gloomtail: ga_main playerdats/gloomtail.dat
