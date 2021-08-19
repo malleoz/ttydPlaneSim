@@ -55,6 +55,21 @@ def main(argc, argv):
     # Specify the X and Y position bound #
     # required in order to define what's #
     # considered a valid plane flight.   #
+    #Values for the first plane panel, east of the thousand year door room. 
+    #landingX = -467.7
+    #landingY = 110.0
+    #Flurrie's plane panel.
+    #landingX = 482.000
+    #landingY = 100.000
+    #Gloomtail's door - the ultimate challenge! 
+    #landingX = 681.000
+    #landingY = -15
+    #Grodus platform
+    #landingX = 595
+    #landingY = -390
+    #Room heading to blooper.
+    #landingX=515.0
+    #landingY=25.0    
     landingX = FLAGS.GetFlag("landingX")
     landingY = FLAGS.GetFlag("landingY")
     if landingX is None or landingY is None:

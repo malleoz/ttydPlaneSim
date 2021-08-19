@@ -1,10 +1,8 @@
-**/*.o
+obj/*
 *.swp
 player.dat
 ram.raw
 test_simulation
-run_ga
+simulate_single
 ga_main
-sample_sim/test_simulation
-sample_sim/struggle
 __pycache__
