@@ -38,6 +38,9 @@ struct Result {
     struct Player player;
     bool collided;
     bool landed;
+    bool reachedInterference;
+    bool collidedInterference;
+    bool landedInterference;
 };
 
 /**
@@ -113,5 +116,24 @@ player is below the target, and negative if we're above it.
 Author: Malleo
 */
 float distance_to_go_y(struct Player p);
-
+/**
+How far away are we from an interfering piece of collision?
+Arguments:
+Player p: The current player struct
+Returns:
+The distance we are away from the x-coordinate of the interfering collision.
+This value is positive if the player has not contacted the wall yet, and
+negative if we have gone through it
+*/
+float interference_distance_to_go_x(struct Player p);
+/**
+How far away are we from an interfering piece of collision?
+Arguments:
+Player p: The current player struct
+Returns:
+The distance we are away from the y-coordinate of the interfering collision.
+This value is positive if the player has not contacted the wall yet, and
+negative if we have gone below it
+*/
+float interference_distance_to_go_y(struct Player p);
 #endif

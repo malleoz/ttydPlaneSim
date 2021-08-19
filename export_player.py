@@ -3,12 +3,15 @@ import sys
 import flags
 import bindatastore as bin
 
-# python3 export_player.py --landingX 300 --landingY 100 --ram ram/flurrie.raw
+# python3 export_player.py --landingX 300 --landingY 100 --ram ram/flurrie.raw [--interferenceX1 0 --interference X2 50 --interferenceY -100]
 
 FLAGS = flags.Flags()
 FLAGS.DefineString("ram", "ram.raw")        # Filepath to Dolphin RAM dump
-FLAGS.DefineInt("landingX")
-FLAGS.DefineInt("landingY")
+FLAGS.DefineFloat("landingX")
+FLAGS.DefineFloat("landingY")
+FLAGS.DefineFloat("interferenceX1")
+FLAGS.DefineFloat("interferenceX2")
+FLAGS.DefineFloat("interferenceY")
 #FLAGS.DefineString("region", "U")   # Game version (U or J)
 
 getMarioPtr = { "U": 0x8041e900}
@@ -75,6 +78,18 @@ def main(argc, argv):
     sys.stdout.write("%.9g " % motIndex9)
     sys.stdout.write("%.9g " % landingX)
     sys.stdout.write("%.9g " % landingY)
+
+    interferenceX1 = FLAGS.GetFlag("interferenceX1")
+    interferenceY1 = FLAGS.GetFlag("interferenceY1")
+    interferenceX2 = FLAGS.GetFlag("interferenceX2")
+    interferenceY2 = FLAGS.GetFlag("interferenceY2")
+
+    if not None in [interferenceX1, interferenceY1, interferenceX2, interferenceY2]:
+        # Assert x1 < x2
+        if interferenceX1 < interferenceX2:
+            sys.stdout.write("%.9g " % interferenceX1)
+            sys.stdout.write("%.9g " % interferenceX2)
+        sys.stdout.write("%.9g " % interferenceY)
 
 
 if __name__ == "__main__":

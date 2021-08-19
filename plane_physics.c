@@ -20,6 +20,11 @@ float gPi;
 float landingX;
 float landingY;
 
+bool interferencePresent;
+float interferenceX1;
+float interferenceX2;
+float interferenceY;
+
 Player init(FILE *playerDat) {
     gPi = 3.1415927;  // The game decides to round to 7 places
 
@@ -42,7 +47,11 @@ Player init(FILE *playerDat) {
     fscanf(playerDat, "%f", &player.motStruct.index9);
     fscanf(playerDat, "%f", &landingX);
     fscanf(playerDat, "%f", &landingY);
-   
+    // Is there an interfering piece of collision duriing the flight that we need to avoid?
+    interferencePresent = fscanf(playerDat, "%f", &interferenceX1);
+    fscanf(playerDat, "%f", &interferenceX2);
+    fscanf(playerDat, "%f", &interferenceY);
+
     return player;
 }
 
@@ -545,6 +554,33 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
         }
     }
 
+    // Determine if we have intersected any interfering piece of collision
+    if (interferencePresent && player.position.x > interferenceX1) {
+	nextFrame->reachedInterference = true;
+
+	if (player.position.x < interferenceX2 && player.position.y < interferenceY) {
+	    // We've hit the collision... But was it from the side or on top?
+	    nextFrame->collidedInterference = true;
+
+	    // If x difference > 5 then this means I landed above the interference
+	    if (leftFlight ? (interferenceX2 - player.position.x > 5) : (player.position.x - interferenceX1 > 5)) {
+	        nextFrame->landedInterference = true;
+	    }
+	    else {
+	        nextFrame->landedInterference = false;
+	    }
+	}
+	else {
+	    nextFrame->collidedInterference = false;
+	    nextFrame->landedInterference = false;
+	}
+    }
+    else {
+        nextFrame->reachedInterference = false;
+	nextFrame->collidedInterference = false;
+	nextFrame->landedInterference = false;
+    }
+
     return;
 }
 
@@ -563,6 +599,22 @@ float distance_to_go_x(Player p) {
 // returns > 0 if we are below platform, < 0 if we're over platform
 float distance_to_go_y(Player p) {
     return landingY - p.position.y;
+}
+
+float interference_distance_to_go_x(Player p) {
+    bool flyLeft = (p.motStruct.flags & 1) == 0 ? true : false;
+
+    if (flyLeft) {
+        return p.position.x - interferenceX2;
+    }
+    else {
+    	return interferenceX1 - p.position.x;
+    }
+}
+
+// returns > 0 if we are below platform
+float interference_distance_to_go_y(Player p) {
+    return interferenceY - p.position.y;
 }
 
 /*
