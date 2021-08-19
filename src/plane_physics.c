@@ -114,13 +114,20 @@ void neutralCalc(Player *player) {
 
         //bVar1 = false; // 8009ce5c
 
-        // 8009ce78 - We assume that hitobjUnder.attr = 0
+    #ifdef ABOVE_PANEL
+        motStruct->rotationPivot.x += -0.001;
+        player->baseSpeed += 0.5;
+        if (2.0 < player->baseSpeed) {
+            player->baseSpeed = 2.0;
+        }
+    #else
 
         motStruct->index7 = (float)dispDirectionCurrent;
         debug_printf("[0x8009ce8c] motStruct->index7 [f31]:\t\t%10.6f\n", motStruct->index7);
 
         motStruct->rotationPivot.x = motStruct->rotationPivot.x + motStruct->index7;
         debug_printf("[0x8009cea0] motStruct->rotationPivot.x [f0]:\t\t%10.6f\n", motStruct->rotationPivot.x);
+    #endif
     }
     
     // Restrict maximum (negative) nosedive angle
@@ -236,6 +243,7 @@ void nosediveCalc(Player *player) {
             motStruct->index5 = 1;
         }
         
+    #ifndef ABOVE_PANEL
         // Below execution occurs if no plane panel below Mario. Assume this is the case
 
         float wIndex7 = motStruct->index7;
@@ -250,13 +258,18 @@ void nosediveCalc(Player *player) {
             motStruct->index7 = wIndex7;
             debug_printf("[0x8009d3e0] motStruct->index7 [f0]:\t\t\t%10.6f\n", motStruct->index7);
         }
+    #endif
     }
 
+#ifdef ABOVE_PANEL
+    motStruct->index9 = -22.0;
+#else
     // Below execution occurs if no plane panel below Mario. Assume this is the case
     float wIndex9 = motStruct->index9;
 
     motStruct->index9 = 0.1 * (-45.0 - wIndex9) + wIndex9;
     debug_printf("[0x8009d440] motStruct->index9 [f0]:\t\t\t%10.6f\n", motStruct->index9);
+#endif
 
     motStruct->rotationPivot.x = motStruct->rotationPivot.x + motStruct->index5;
     debug_printf("[0x8009d454] motStruct->rotationPivot.x [f0]:\t\t\t%10.6f\n", motStruct->rotationPivot.x);
@@ -343,6 +356,7 @@ void taildiveCalc(Player *player) {
             dispDirectionCurrent = (double)(wIndex5 * 18.0);
             debug_printf("[0x8009d0c0] dispDirectionCurrent [f31]:\t\t\t%10.6f\n", dispDirectionCurrent);
 
+        #ifndef ABOVE_PANEL
             // Below assumes that there is no collision below Mario
             dispDirectionCurrent = sin((double)((float)((double)gPi * dispDirectionCurrent) / 180.0));
             debug_printf("[0x8009d11c] dispDirectionCurrent [f1]:\t\t\t%10.6f\n", dispDirectionCurrent);
@@ -358,6 +372,7 @@ void taildiveCalc(Player *player) {
 
             motStruct->index7 = wIndex5;
             debug_printf("[0x8009d150] motStruct->index7 [f0]:\t\t\t%10.6f\n", motStruct->index7);
+	#endif
         }
 
         motStruct->rotationPivot.x = motStruct->rotationPivot.x + motStruct->index7;
