@@ -5,7 +5,7 @@ CC = gcc
 #MMTrebuchet's version:
 GAUL_BASE = /home/pi/gaul-install
 GAUL_FLAGS = -L${GAUL_BASE}/lib -I${GAUL_BASE}/include 
-CFLAGS = -g -O3
+CFLAGS = -g -O3 -D ABOVE_PANEL
 CLIBS = -lm
 GAUL_LIBS = -lgaul -lgaul_util
 GAUL_THREADS = 4
@@ -31,9 +31,9 @@ flurrie: ga_main playerdats/flurrie.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/flurrie.dat \
 		--output-file=test_flurrie.txt \
-		--pop-size=1000 \
-		--max-frames=400 \
-		--num-generations=1000
+		--pop-size=3000 \
+		--max-frames=340 \
+		--num-generations=50000
 
 
 gloomtail: ga_main playerdats/gloomtail.dat
@@ -58,4 +58,12 @@ blooper: ga_main playerdats/blooper.dat
 		--output-file=test_blooper.txt \
 		--pop-size=3000 \
 		--max-frames=100 \
+		--num-generations=1000
+
+gloomtail_above_panel: ga_main playerdats/gloomtail_above_panel.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
+		--player-dat=playerdats/gloomtail_above_panel.dat \
+		--output-file=test_gloomtail_above_panel.txt \
+		--pop-size=300 \
+		--max-frames=1500 \
 		--num-generations=1000

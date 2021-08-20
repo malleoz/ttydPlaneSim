@@ -49,10 +49,18 @@ Player init(FILE *playerDat) {
     fscanf(playerDat, "%f", &landingY);
     // Is there an interfering piece of collision duriing the flight that we need to avoid?
     interferencePresent = fscanf(playerDat, "%f", &interferenceX1);
+    printf("Interference: %d\n", interferencePresent);
+    if(interferencePresent){
+        printf("Interference starts at %f\n", interferenceX1);
+    }
     fscanf(playerDat, "%f", &interferenceX2);
     fscanf(playerDat, "%f", &interferenceY);
 
     return player;
+}
+
+bool usingInterference(){
+    return interferencePresent;
 }
 
 // Restrict parameter to 0-360 deg

@@ -136,4 +136,8 @@ This value is positive if the player has not contacted the wall yet, and
 negative if we have gone below it
 */
 float interference_distance_to_go_y(struct Player p);
+
+/** Simply returns true if this flight should use the interference model. 
+*/
+bool usingInterference();
 #endif
