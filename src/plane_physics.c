@@ -592,30 +592,38 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
     }
 
     // Determine if we have intersected any interfering piece of collision
-    if (interferencePresent && player.position.x > interferenceX1) {
-	nextFrame->reachedInterference = true;
-
-	if (player.position.x < interferenceX2 && player.position.y < interferenceY) {
-	    // We've hit the collision... But was it from the side or on top?
-	    nextFrame->collidedInterference = true;
-
-	    // If x difference > 5 then this means I landed above the interference
-	    if (leftFlight ? (interferenceX2 - player.position.x > 5) : (player.position.x - interferenceX1 > 5)) {
-	        nextFrame->landedInterference = true;
-	    }
-	    else {
-	        nextFrame->landedInterference = false;
-	    }
-	}
-	else {
-	    nextFrame->collidedInterference = false;
-	    nextFrame->landedInterference = false;
-	}
-    }
-    else {
-        nextFrame->reachedInterference = false;
-	nextFrame->collidedInterference = false;
-	nextFrame->landedInterference = false;
+    nextFrame->reachedInterference = false;
+    nextFrame->collidedInterference = false;
+    nextFrame->landedInterference = false;
+    
+    if (interferencePresent) {
+    	if (leftFlight) {
+    	    if (player.position.x < interferenceX2) {
+    		nextFrame->reachedInterference = true;
+    		
+    		if (player.position.x > interferenceX1 && player.position.y < interferenceY) {
+    		    nextFrame->collidedInterference = true;
+    		    
+    		    // If x is sufficiently far into collision, then we must have landed on top
+    		    if (interferenceX2 - player.position.x > 5)  {
+    		        nextFrame->landedInterference = true;
+    		    }
+    		}
+    	    }
+    	}
+    	else {
+    	    if (player.position.x > interferenceX1) {
+    	        nextFrame->reachedInterference =  true;
+    	        
+    	        if (player.position.x < interferenceX2 && player.position.y < interferenceY) {
+    	            nextFrame->collidedInterference = true;
+    	            
+    	            if (player.position.x - interferenceX1 > 5) {
+    	                nextFrame->landedInterference = true;
+    	            }
+    	        }
+    	    }
+    	}
     }
 
     return;
