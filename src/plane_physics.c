@@ -20,6 +20,8 @@ float gPi;
 float landingX;
 float landingY;
 
+float platformX; // The x-axis boundary of the plane panel before physics change
+
 bool interferencePresent;
 float interferenceX1;
 float interferenceX2;
@@ -47,10 +49,11 @@ Player init(FILE *playerDat) {
     fscanf(playerDat, "%f", &player.motStruct.index9);
     fscanf(playerDat, "%f", &landingX);
     fscanf(playerDat, "%f", &landingY);
+    fscanf(playerDat, "%f", &platformX);
+
     // Is there an interfering piece of collision duriing the flight that we need to avoid?
-    interferencePresent = fscanf(playerDat, "%f", &interferenceX1);
-    printf("Interference: %d\n", interferencePresent);
-    if(interferencePresent){
+    fscanf(playerDat, "%f", &interferenceX1);
+    if(interferenceX1 != 0.0){
         printf("Interference starts at %f\n", interferenceX1);
     }
     fscanf(playerDat, "%f", &interferenceX2);
@@ -121,21 +124,24 @@ void neutralCalc(Player *player) {
         }
 
         //bVar1 = false; // 8009ce5c
-
-    #ifdef ABOVE_PANEL
-        motStruct->rotationPivot.x += -0.001;
-        player->baseSpeed += 0.5;
-        if (2.0 < player->baseSpeed) {
-            player->baseSpeed = 2.0;
+	
+    	bool flyLeft = (motStruct->flags & 1) == 0 ? true : false;
+    	bool above_panel = flyLeft ? player->position.x > platformX : player->position.x < platformX;
+    
+    	if (above_panel) {
+            motStruct->rotationPivot.x += -0.001;
+            player->baseSpeed += 0.5;
+            if (2.0 < player->baseSpeed) {
+                player->baseSpeed = 2.0;
+            }
         }
-    #else
+        else {
+            motStruct->index7 = (float)dispDirectionCurrent;
+            debug_printf("[0x8009ce8c] motStruct->index7 [f31]:\t\t%10.6f\n", motStruct->index7);
 
-        motStruct->index7 = (float)dispDirectionCurrent;
-        debug_printf("[0x8009ce8c] motStruct->index7 [f31]:\t\t%10.6f\n", motStruct->index7);
-
-        motStruct->rotationPivot.x = motStruct->rotationPivot.x + motStruct->index7;
-        debug_printf("[0x8009cea0] motStruct->rotationPivot.x [f0]:\t\t%10.6f\n", motStruct->rotationPivot.x);
-    #endif
+            motStruct->rotationPivot.x = motStruct->rotationPivot.x + motStruct->index7;
+            debug_printf("[0x8009cea0] motStruct->rotationPivot.x [f0]:\t\t%10.6f\n", motStruct->rotationPivot.x);
+        }
     }
     
     // Restrict maximum (negative) nosedive angle
@@ -237,6 +243,9 @@ void nosediveCalc(Player *player) {
     motStruct->index5 = motStruct->index5 + 1.0 * (float)(dispDirectionCurrent * dVar8);
     debug_printf("[0x8009d31c] motStruct->index5 [f0]:\t\t\t%10.6f\n", motStruct->index5);
 
+    bool flyLeft = (motStruct->flags & 1) == 0 ? true : false;
+    bool above_panel = flyLeft ? player->position.x > platformX : player->position.x < platformX;
+
     // If stick is not neutral
     if (player->stickPosition != 0) {
         debug_printf("[0x8009d328] BRANCH NOT TAKEN\n");
@@ -251,33 +260,34 @@ void nosediveCalc(Player *player) {
             motStruct->index5 = 1;
         }
         
-    #ifndef ABOVE_PANEL
-        // Below execution occurs if no plane panel below Mario. Assume this is the case
+    	if (!above_panel) {
+            // Below execution occurs if no plane panel below Mario.
 
-        float wIndex7 = motStruct->index7;
-        debug_printf("[0x8009d3b4] wIndex7 [f2]:\t\t\t%10.6f\n", wIndex7);
+            float wIndex7 = motStruct->index7;
+            debug_printf("[0x8009d3b4] wIndex7 [f2]:\t\t\t%10.6f\n", wIndex7);
 
-        motStruct->index7 = 0.1 * (1 - wIndex7) + wIndex7;
-        debug_printf("[0x8009d3c8] motStruct->index7 [f1]:\t\t\t%10.6f\n", motStruct->index7);
+            motStruct->index7 = 0.1 * (1 - wIndex7) + wIndex7;
+            debug_printf("[0x8009d3c8] motStruct->index7 [f1]:\t\t\t%10.6f\n", motStruct->index7);
 
-        if (wIndex7 <= motStruct->index7) {
-            debug_printf("[0x8009d3dc] BRANCH NOT TAKEN\n");
+            if (wIndex7 <= motStruct->index7) {
+                debug_printf("[0x8009d3dc] BRANCH NOT TAKEN\n");
 
-            motStruct->index7 = wIndex7;
-            debug_printf("[0x8009d3e0] motStruct->index7 [f0]:\t\t\t%10.6f\n", motStruct->index7);
-        }
-    #endif
+                motStruct->index7 = wIndex7;
+                debug_printf("[0x8009d3e0] motStruct->index7 [f0]:\t\t\t%10.6f\n", motStruct->index7);
+            }
+	}
     }
+     
+    if (above_panel) {
+    	motStruct->index9 = -22.0;
+    }
+    else {
+        // Below execution occurs if no plane panel below Mario. Assume this is the case
+        float wIndex9 = motStruct->index9;
 
-#ifdef ABOVE_PANEL
-    motStruct->index9 = -22.0;
-#else
-    // Below execution occurs if no plane panel below Mario. Assume this is the case
-    float wIndex9 = motStruct->index9;
-
-    motStruct->index9 = 0.1 * (-45.0 - wIndex9) + wIndex9;
-    debug_printf("[0x8009d440] motStruct->index9 [f0]:\t\t\t%10.6f\n", motStruct->index9);
-#endif
+        motStruct->index9 = 0.1 * (-45.0 - wIndex9) + wIndex9;
+        debug_printf("[0x8009d440] motStruct->index9 [f0]:\t\t\t%10.6f\n", motStruct->index9);
+    }
 
     motStruct->rotationPivot.x = motStruct->rotationPivot.x + motStruct->index5;
     debug_printf("[0x8009d454] motStruct->rotationPivot.x [f0]:\t\t\t%10.6f\n", motStruct->rotationPivot.x);
@@ -364,23 +374,26 @@ void taildiveCalc(Player *player) {
             dispDirectionCurrent = (double)(wIndex5 * 18.0);
             debug_printf("[0x8009d0c0] dispDirectionCurrent [f31]:\t\t\t%10.6f\n", dispDirectionCurrent);
 
-        #ifndef ABOVE_PANEL
-            // Below assumes that there is no collision below Mario
-            dispDirectionCurrent = sin((double)((float)((double)gPi * dispDirectionCurrent) / 180.0));
-            debug_printf("[0x8009d11c] dispDirectionCurrent [f1]:\t\t\t%10.6f\n", dispDirectionCurrent);
+	    bool flyLeft = (motStruct->flags & 1) == 0 ? true : false;
+            bool above_panel = flyLeft ? player->position.x > platformX : player->position.x < platformX;
+        
+	    if (!above_panel) {
+            	// Below assumes that there is no collision below Mario
+            	dispDirectionCurrent = sin((double)((float)((double)gPi * dispDirectionCurrent) / 180.0));
+            	debug_printf("[0x8009d11c] dispDirectionCurrent [f1]:\t\t\t%10.6f\n", dispDirectionCurrent);
             
-            wIndex5 = -8.0 * (float)dispDirectionCurrent;
-            debug_printf("[0x8009d134] wIndex5 [f0]:\t\t\t%10.6f\n", wIndex5);
+            	wIndex5 = -8.0 * (float)dispDirectionCurrent;
+            	debug_printf("[0x8009d134] wIndex5 [f0]:\t\t\t%10.6f\n", wIndex5);
 
-            if (wIndex5 <= -2.0) {
-                debug_printf("[0x8009d140] BRANCH NOT TAKEN\n");
-                wIndex5 = -4.0;
-                debug_printf("[0x8009d148] wIndex5 [f0]:\t\t\t%10.6f\n", wIndex5);
-            }
+            	if (wIndex5 <= -2.0) {
+                    debug_printf("[0x8009d140] BRANCH NOT TAKEN\n");
+                    wIndex5 = -4.0;
+                    debug_printf("[0x8009d148] wIndex5 [f0]:\t\t\t%10.6f\n", wIndex5);
+                }
 
-            motStruct->index7 = wIndex5;
-            debug_printf("[0x8009d150] motStruct->index7 [f0]:\t\t\t%10.6f\n", motStruct->index7);
-	#endif
+                motStruct->index7 = wIndex5;
+                debug_printf("[0x8009d150] motStruct->index7 [f0]:\t\t\t%10.6f\n", motStruct->index7);
+	    }
         }
 
         motStruct->rotationPivot.x = motStruct->rotationPivot.x + motStruct->index7;

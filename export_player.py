@@ -3,12 +3,13 @@ import sys
 import flags
 import bindatastore as bin
 
-# python3 export_player.py --landingX 300 --landingY 100 --ram ram/flurrie.raw [--interferenceX1 0 --interference X2 50 --interferenceY -100]
+# python3 export_player.py --landingX 300 --landingY 100 --platformX --ram ram/flurrie.raw [--interferenceX1 0 --interference X2 50 --interferenceY -100]
 
 FLAGS = flags.Flags()
 FLAGS.DefineString("ram", "ram.raw")        # Filepath to Dolphin RAM dump
-FLAGS.DefineFloat("landingX")
+FLAGS.DefineFloat("landingX")               # Specify the X boundary of the plane panel (when physics change)
 FLAGS.DefineFloat("landingY")
+FLAGS.DefineFloat("platformX")
 FLAGS.DefineFloat("interferenceX1")
 FLAGS.DefineFloat("interferenceX2")
 FLAGS.DefineFloat("interferenceY")
@@ -75,6 +76,10 @@ def main(argc, argv):
     if landingX is None or landingY is None:
         print("A proper landing position was not provided.")
 
+    platformX = FLAGS.GetFlag("platformX")
+    if platformX is None:
+        print("A proper x-axis boundary for the plane panel was not provided.")
+
     # Export to stdout
 
     sys.stdout.write("%.9g " % xPos)
@@ -93,6 +98,7 @@ def main(argc, argv):
     sys.stdout.write("%.9g " % motIndex9)
     sys.stdout.write("%.9g " % landingX)
     sys.stdout.write("%.9g " % landingY)
+    sys.stdout.write("%.9g " % platformX)
 
     interferenceX1 = FLAGS.GetFlag("interferenceX1")
     interferenceY1 = FLAGS.GetFlag("interferenceY1")
