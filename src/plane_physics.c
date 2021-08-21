@@ -54,7 +54,8 @@ Player init(FILE *playerDat) {
     // Is there an interfering piece of collision duriing the flight that we need to avoid?
     fscanf(playerDat, "%f", &interferenceX1);
     if(interferenceX1 != 0.0){
-        printf("Interference starts at %f\n", interferenceX1);
+        printf("Interference starts at X=%f\n", interferenceX1);
+	interferencePresent = true;
     }
     fscanf(playerDat, "%f", &interferenceX2);
     fscanf(playerDat, "%f", &interferenceY);
