@@ -101,15 +101,17 @@ def main(argc, argv):
     sys.stdout.write("%.9g " % platformX)
 
     interferenceX1 = FLAGS.GetFlag("interferenceX1")
-    interferenceY1 = FLAGS.GetFlag("interferenceY1")
     interferenceX2 = FLAGS.GetFlag("interferenceX2")
-    interferenceY2 = FLAGS.GetFlag("interferenceY2")
+    interferenceY = FLAGS.GetFlag("interferenceY")
 
-    if not None in [interferenceX1, interferenceY1, interferenceX2, interferenceY2]:
+    if not None in [interferenceX1, interferenceX2, interferenceY]:
         # Assert x1 < x2
         if interferenceX1 < interferenceX2:
             sys.stdout.write("%.9g " % interferenceX1)
             sys.stdout.write("%.9g " % interferenceX2)
+        else:
+            sys.stdout.write("%.9g " % interferenceX2)
+            sys.stdout.write("%.9g " % interferenceX1)
         sys.stdout.write("%.9g " % interferenceY)
 
 
