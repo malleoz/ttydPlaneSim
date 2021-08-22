@@ -35,7 +35,6 @@ flurrie: ga_main playerdats/flurrie.dat
 		--max-frames=340 \
 		--num-generations=50000
 
-
 gloomtail: ga_main playerdats/gloomtail.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/gloomtail.dat \
@@ -64,6 +63,15 @@ gloomtail_above_panel: ga_main playerdats/gloomtail_above_panel.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/gloomtail_above_panel.dat \
 		--output-file=test_gloomtail_above_panel.txt \
-		--pop-size=300 \
-		--max-frames=1500 \
+		--pop-size=3000 \
+		--max-frames=100 \
+		--num-generations=1000
+
+
+plane_game: ga_main playerdats/plane_game.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
+		--player-dat=playerdats/plane_game.dat \
+		--output-file=test_plane_game.txt \
+		--pop-size=1000 \
+		--max-frames=2000 \
 		--num-generations=1000
