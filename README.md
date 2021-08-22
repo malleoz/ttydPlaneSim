@@ -21,14 +21,22 @@ This process is repeated until the algorithm has devised an optimal input string
    ```
    - Go to View and toggle Memory
    - Click `Dump MRAM`
-2. Open `export_player.py` and modify `landingX` and `landingY` which correspond to the first coordinates for which you contact the landing wall and stand on the landing platform respectively.
-3. Save the player.dat file in the playerdats directory with an informative name.
-4. Edit the Makefile to add another optimization at the bottom. Copy over one of the existing optimization runs (the ones that have ga\_main as a dependency) and change it to read in the appropriate player.dat file. Also change the name of the output file to something informative. 
-5. `make <<condition>>` to spin up the simulation! It will absolutely work the first time, no segfaults or linker errors. 
+2. Run the following command using a Python version >= 3.7:
+   ```
+   ./export_player.py --ram A.raw --landingX B --landingY C --platformX D \
+   --interferenceX1 E --interferenceX2 F --interferenceY G > playerdats/H.dat
+   ```
+   For the above command:
+   - A is the filename of your RAM dump from step 1
+   - B and C are the respective x and y float coordinate values of your desired landing position (can be approximate)
+   - D is the x-axis edge of the takeoff platform
+   - E, F, and G are only required when there is an interfering piece of collision in the middle of your flight, in which case E and F are x-axis coordinate values and G is a y-axis coordinate value, such that you are considered to be colliding with the interfering collision if you are between E and F and below G
+   - H is the filename that you would like to use to represent the scenario provided from step 1
+3. Edit the Makefile to add another optimization at the bottom. Copy over one of the existing optimization runs (the ones that have ga\_main as a dependency) and change it to read in the appropriate player.dat file. Also change the name of the output file to something informative. 
+4. `make <<condition>>` to spin up the simulation! It will absolutely work the first time, no segfaults or linker errors. 
     5(a). Debug the makefile because it didn't work. If you have installed gaul somewhere unusual (like in your home directory), make sure you edit `GAUL_BASE` to point to this location. 
-6. To view the progress, use the included `plotResults.py` script. (Instructions will pop up when you `./plotResults.py` on the console.)
+5. To view the progress, use the included `plotResults.py` script. (Instructions will pop up when you `./plotResults.py` on the console.)
 
 
 ## Constraints and TODO
-- We use the assumption that we are never above a plane panel. This assumption means that all plane panels must be activated along the Z-axis edge only in scenarios for which there is no floor past the edge. For now, decompiling collision object data is a bit extreme, as most plane flights will occur on the Z-axis edge in the TAS to build speed faster.
 - This program runs on Linux. MMTrebuchet wishes you luck if you want to cross-compile it for your OS of choice.
