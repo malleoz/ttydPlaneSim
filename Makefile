@@ -1,11 +1,11 @@
 CC = gcc
 #CHANGEME: Wherever you installed Gaul, this should point to that location. 
 #Malleo's version:
-#GAUL_BASE = /malleo/somewhere/i/dont/know/where/gaul-install
+#GAUL_BASE = /usr/local
 #MMTrebuchet's version:
 GAUL_BASE = /home/pi/gaul-install
 GAUL_FLAGS = -L${GAUL_BASE}/lib -I${GAUL_BASE}/include 
-CFLAGS = -g -O3 -D ABOVE_PANEL
+CFLAGS = -g -O3
 CLIBS = -lm
 GAUL_LIBS = -lgaul -lgaul_util
 GAUL_THREADS = 4
@@ -27,19 +27,68 @@ ${OBJ_DIR}/run_ga.o: ${SRC_DIR}/run_ga.c ${SRC_DIR}/run_ga.h ${OBJ_DIR}/run_simu
 ga_main: ${SRC_DIR}/ga_main.c ${OBJ_DIR}/run_ga.o ${OBJ_DIR}/run_simulation.o ${OBJ_DIR}/plane_physics.o
 	${CC} ${CFLAGS} ${GAUL_FLAGS} -o$@ $^ ${CLIBS} ${GAUL_LIBS}
 
-flurrie: ga_main playerdats/flurrie.dat
+# Prologue
+tyd_east_room: ga_main playerdats/tyd_east_room.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
-		--player-dat=playerdats/flurrie.dat \
-		--output-file=test_flurrie.txt \
+		--player-dat=playerdats/tyd_east_room.dat \
+		--output-file=SimRes_tyd_east_room.txt \
+		--pop-size=3000 \
+		--max-frames=125 \
+		--num-generations=200000
+
+tyd_east_room_no_yellow_block: ga_main playerdats/tyd_east_room_no_yellow_block.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
+		--player-dat=playerdats/tyd_east_room_no_yellow_block.dat \
+		--output-file=SimRes_tyd_east_room_no_yellow_block.txt \
+		--pop-size=3000 \
+		--max-frames=125 \
+		--num-generations=200000
+
+tyd_east_room_tas: ga_main playerdats/tyd_east_room_tas.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
+		--player-dat=playerdats/tyd_east_room_tas.dat \
+		--output-file=SimRes_tyd_east_room_tas.txt \
+		--pop-size=3000 \
+		--max-frames=125 \
+		--num-generations=200000
+
+blooper: ga_main playerdats/blooper.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
+		--player-dat=playerdats/blooper.dat \
+		--output-file=simRes_blooper.txt \
+		--pop-size=3000 \
+		--max-frames=100 \
+		--num-generations=1000
+
+
+flurrie_unraised: ga_main playerdats/flurrie_unraised.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
+		--player-dat=playerdats/flurrie_unraised.dat \
+		--output-file=simRes_flurrie_unraised.txt \
 		--pop-size=3000 \
 		--max-frames=340 \
 		--num-generations=50000
 
+flurrie_raised: ga_main playerdats/flurrie_raised.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
+		--player-dat=playerdats/flurrie_raised.dat \
+		--output-file=simRes_flurrie_raised.txt \
+		--pop-size=3000 \
+		--max-frames=250 \
+		--num-generations=50000
+
+glitzville: ga_main playerdats/glitzville.dat
+	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
+		--player-dat=playerdats/glitzville.dat \
+		--output-file=simRes_glitzville.txt \
+		--pop-size=3000 \
+		--max-frames=340 \
+		--num-generations=200000
 
 gloomtail: ga_main playerdats/gloomtail.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/gloomtail.dat \
-		--output-file=test_gloomtail.txt \
+		--output-file=simRes_gloomtail.txt \
 		--pop-size=3000 \
 		--max-frames=900 \
 		--num-generations=100000
@@ -47,23 +96,15 @@ gloomtail: ga_main playerdats/gloomtail.dat
 grodus: ga_main playerdats/grodus.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/grodus.dat \
-		--output-file=test_grodus.txt \
+		--output-file=simRes_grodus.txt \
 		--pop-size=2000 \
 		--max-frames=300 \
 		--num-generations=10000
 
-blooper: ga_main playerdats/blooper.dat
+plane_game: ga_main playerdats/plane_game.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
-		--player-dat=playerdats/blooper.dat \
-		--output-file=test_blooper.txt \
+		--player-dat=playerdats/plane_game.dat \
+		--output-file=test_plane_game.txt \
 		--pop-size=3000 \
-		--max-frames=100 \
-		--num-generations=1000
-
-gloomtail_above_panel: ga_main playerdats/gloomtail_above_panel.dat
-	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
-		--player-dat=playerdats/gloomtail_above_panel.dat \
-		--output-file=test_gloomtail_above_panel.txt \
-		--pop-size=300 \
 		--max-frames=1500 \
-		--num-generations=1000
+		--num-generations=200000
