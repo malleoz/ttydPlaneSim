@@ -36,10 +36,12 @@ export_pd flurrie_unraised 490 110 -253.89
 export_pd flurrie_raised 490 110 -253.89
 
 # Chapter 3
-export_pd glitzville -345 80 563.2
+export_pd glitzville -345 100 563.2
 
 # Chapter 8
 export_pd gloomtail 685 -15 -503.8
 export_pd grodus 600 -415 -650 # Prevents above-panel physics from occurring
+export_pd gloomtail_after_bug 685 -15 -503.8
 
-export_pd plane_game 1700 0 -1302.9 -1300 1700 0
+export_pd_int plane_game 1700 1000 -1302.9 -1400 1800 0
+export_pd plane_game_left -1302.9 1000 -1302.9
