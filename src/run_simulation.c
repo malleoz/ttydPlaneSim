@@ -22,6 +22,9 @@ int runSimulation(int8_t *stickPositions,
     //Initialize the first frame of the output.
     output[0].collided=false;
     output[0].landed = false;
+    output[0].collidedInterference = false;
+    output[0].landedInterference = false;
+    output[0].reachedInterference = false;
     output[0].player = *startPoint;
     
     int curFrame;
