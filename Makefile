@@ -81,7 +81,7 @@ glitzville: ga_main playerdats/glitzville.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/glitzville.dat \
 		--output-file=simRes_glitzville.txt \
-		--pop-size=3000 \
+		--pop-size=2000 \
 		--max-frames=340 \
 		--num-generations=200000
 
