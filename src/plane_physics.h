@@ -18,7 +18,6 @@ struct MotStruct {
     float index5;
     float ySpeed;
     float index7;
-    float index8;
     float index9;
 };
 
