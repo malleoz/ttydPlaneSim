@@ -47,7 +47,7 @@ def main(argc, argv):
     motIndex5 = motPtrStore.rfloat(0x14)
     ySpeed    = motPtrStore.rfloat(0x18)
     motIndex7 = motPtrStore.rfloat(0x1C)
-    motIndex8 = motPtrStore.rfloat(0x20)
+    # timeout field ommitted
     motIndex9 = motPtrStore.rfloat(0x24)
 
     ######################################
@@ -94,7 +94,6 @@ def main(argc, argv):
     sys.stdout.write("%.9g " % motIndex5)
     sys.stdout.write("%.9g " % ySpeed)
     sys.stdout.write("%.9g " % motIndex7)
-    sys.stdout.write("%.9g " % motIndex8)
     sys.stdout.write("%.9g " % motIndex9)
     sys.stdout.write("%.9g " % landingX)
     sys.stdout.write("%.9g " % landingY)
