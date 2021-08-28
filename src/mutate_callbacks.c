@@ -15,11 +15,11 @@ void plane_mutate_point_roundoff(population *pop, entity *father, entity *son){
     int8_t prev_value = ((entity_chrom *) father->chromosome[0])->controllerInputs[mutate_point];
     int next_value;
     if(prev_value < -25){
-        next_value = -72;
+        next_value = -71;
     }else if(prev_value < 25){
         next_value = 0;
     }else{
-        next_value = 72;
+        next_value = 71;
     }
     int8_t controllerInput = (int8_t) next_value;
     ((int8_t *)((entity_chrom *)son->chromosome[0])->controllerInputs)[mutate_point] = controllerInput;
@@ -93,6 +93,35 @@ void plane_mutate_region_set(population *pop, entity *father, entity *son){
     }
 }
 
+void plane_mutate_region_slide(population *pop, entity *father, entity *son){
+    //Offset a random region of the flight either forwards or backwards:
+    // ABCDEFGHI
+    //     |
+    //     V
+    // ABGCDEFHI
+    //Allow for drifts past the end of the flight, so only use pop->len_chromosomes rather than the collide frame.
+    int slide_start, slide_stop;
+    getSplitPoints(pop->len_chromosomes-2, &slide_start, &slide_stop);
+    slide_start++; slide_stop++;
+    //Don't allow starting or stopping at the very edge. 
+    pop->chromosome_replicate(pop, father, son, 0);
+    int8_t *chrom = ((entity_chrom *) son->chromosome[0])->controllerInputs;
+    if(random_boolean()){
+        //Slide forward. Take the value at the end of the window and put it at the beginning.
+        int8_t finalVal = chrom[slide_stop];
+        for(int i = slide_stop-1; i>=slide_start; i--){
+            chrom[i+1] = chrom[i];
+        }
+        chrom[slide_start] = finalVal;
+    }else{
+        //Slide backward. Take the first value and put it at the end.
+        int8_t firstValue = chrom[slide_start];
+        for(int i = slide_start+1; i <= slide_stop; i++){
+            chrom[i-1] = chrom[i];
+        }
+        chrom[slide_stop] = firstValue;
+    }
+}
 //Used by the sort in plane_mutate_dilate. 
 //It just compares two integers, nothing fancy. 
 int compInts(const void *elem1, const void *elem2){
@@ -156,10 +185,12 @@ void joint_mutate(population *pop, entity *father, entity *son){
             plane_mutate_region_drift(pop, father, son);
         }else if (mode < 5){
             plane_mutate_region_set(pop, father, son);
-        }else if (mode < 12){
+        }else if (mode < 11){
             plane_mutate_dilate(pop, father, son);
         }else if (mode < 14){
             plane_mutate_point_roundoff(pop, father, son);
+        }else if (mode < 16){
+            plane_mutate_region_slide(pop, father, son);
         }else { 
             plane_mutate_point_random(pop, father, son);
         }

@@ -51,7 +51,7 @@ void plane_crossover_region_scaling(population *pop,
     }
     
     if(cross_end_father < cross_start_father + 3){
-        if(cross_start_father > 20){
+        if(cross_start_father > 15){
             cross_start_father -= 10;
         }else{
             cross_end_father += 10;
@@ -59,7 +59,7 @@ void plane_crossover_region_scaling(population *pop,
     }
 
     if(cross_end_mother < cross_start_mother + 3){
-        if(cross_start_mother > 20){
+        if(cross_start_mother > 15){
             cross_start_mother -= 10;
         }else{
             cross_end_mother += 10;

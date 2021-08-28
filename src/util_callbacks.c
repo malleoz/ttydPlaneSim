@@ -4,8 +4,13 @@
 boolean plane_seed(population *pop, entity *adam){
     int frameIdx;
     for(frameIdx = 0; frameIdx < pop->len_chromosomes; frameIdx++){
-        int nextValue = random_int(2*72 + 1); //(0-144, inclusive)
-        nextValue -= 72; //-72 to 72, inclusive.
+        int nextValue;
+        if(frameIdx < 100){
+            nextValue = 0;
+        }else{
+            nextValue = random_int(2*72 + 1); //(0-144, inclusive)
+            nextValue -= 72; //-72 to 72, inclusive.
+        }
         int8_t controllerInput = (int8_t) nextValue;
         ((int8_t *)((entity_chrom *)adam ->chromosome[0])->controllerInputs)[frameIdx] = controllerInput;
     }
@@ -149,7 +154,7 @@ static boolean plane_score_no_interference(population *pop, entity *entity){
                   mem->results, 
                   mem->startPoint,
                   pop->len_chromosomes);
-    double score = 5*FAIL_PENALTY;
+    double score = 3*FAIL_PENALTY;
     mem->collideFrame = collideFrame;
     int intCollideFrame, intReachFrame, intLandFrame;
        
@@ -161,7 +166,7 @@ static boolean plane_score_no_interference(population *pop, entity *entity){
         struct Result finalRes =  mem->results[pop->len_chromosomes-1];
         score -= distance_to_go_x(finalRes.player);
         //You didn't make it. So get a fat penalty for that. 
-        score -= FAIL_PENALTY * 4;
+        score -= FAIL_PENALTY * 2;
     }else{
         struct Result finalRes =  mem->results[collideFrame];
         if(finalRes.landed){

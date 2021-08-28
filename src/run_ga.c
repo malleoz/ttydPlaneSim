@@ -106,7 +106,9 @@ int run_ga(FILE * playerDat, FILE *goodControllerInputs,
     pop->adapt = NULL; //No adaptation - this is a purely Darwinian method. 
     //For selections, prefer high-scoring entities. 
     pop->select_one = ga_select_one_randomrank;
+    //pop->select_one = ga_select_one_aggressive;
     pop->select_two = ga_select_two_randomrank;
+    //pop->select_two = ga_select_two_aggressive;
     //See mutate_callbacks.c for this monster.
     pop->mutate = joint_mutate;
     //If there's a bug, it's probably in my crossover function. It's hairy. 
@@ -122,8 +124,8 @@ int run_ga(FILE * playerDat, FILE *goodControllerInputs,
         GA_ELITISM_ONE_PARENT_SURVIVES, //ga_elitism_type 
                     //Maybe consider using GA_ELITISM_PARENTS_SURVIVE, 
                     //but this incurs a performance penalty. 
-        0.3,    //double crossover - The frequency of the crossover events.
-        0.9,    //double mutation - The frequency of mutation events.
+        1,    //double crossover - The frequency of the crossover events.
+        1,    //double mutation - The frequency of mutation events.
         0.0);   //double migration - Only used when multiple populations
                     //exist, which is not the case here. 
 
