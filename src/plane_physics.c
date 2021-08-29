@@ -16,9 +16,7 @@ typedef struct Result Result;
 float gPi;
 float landingX;
 float landingY;
-
 float platformX; // The x-axis boundary of the plane panel before physics change
-
 bool interferencePresent;
 float interferenceX1;
 float interferenceX2;
@@ -393,31 +391,16 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
     nextFrame->landedInterference = false;
     
     if (interferencePresent) {
-    	if (leftFlight) {
-    	    if (player.position.x < interferenceX2) {
-    		nextFrame->reachedInterference = true;
-    		
-    		if (player.position.x > interferenceX1 && player.position.y < interferenceY) {
-    		    nextFrame->collidedInterference = true;
+        if  ((leftFlight && player.position.x < interferenceX2) || (!leftFlight && player.position.x > interferenceX1)) {
+            nextFrame->reachedInterference = true;
+    	    
+    	    if (player.position.y < interferenceY && ((leftFlight && player.position.x > interferenceX1) || (!leftFlight && player.position.x < interferenceX2))) {
+    		nextFrame->collidedInterference = true;
     		    
-    		    // If x is sufficiently far into collision, then we must have landed on top
-    		    if (interferenceX2 - player.position.x > 5)  {
-    		        nextFrame->landedInterference = true;
-    		    }
+    		if ((leftFlight && interferenceX2 - player.position.x > 5) || (!leftFlight && player.position.x - interferenceX1 > 5)) {
+        	    // If x is sufficiently far into collision, then we must have landed on top
+                   nextFrame->landedInterference = true;
     		}
-    	    }
-    	}
-    	else {
-    	    if (player.position.x > interferenceX1) {
-    	        nextFrame->reachedInterference =  true;
-    	        
-    	        if (player.position.x < interferenceX2 && player.position.y < interferenceY) {
-    	            nextFrame->collidedInterference = true;
-    	            
-    	            if (player.position.x - interferenceX1 > 5) {
-    	                nextFrame->landedInterference = true;
-    	            }
-    	        }
     	    }
     	}
     }
