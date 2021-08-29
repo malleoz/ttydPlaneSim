@@ -13,9 +13,9 @@ struct Vector {
 
 struct MotStruct {
     uint32_t flags;
-    struct Vector rotationPivot;
+    struct Vector rot;
     float index4;
-    float index5;
+    float pitchRate;
     float ySpeed;
     float index7;
     float index9;
