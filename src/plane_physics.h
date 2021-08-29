@@ -13,9 +13,9 @@ struct Vector {
 
 struct MotStruct {
     uint32_t flags;
-    struct Vector rotationPivot;
+    struct Vector rot;
     float index4;
-    float index5;
+    float pitchRate;
     float ySpeed;
     float index7;
     float index9;
@@ -26,7 +26,6 @@ struct Player {
     float wDirectionView;
     struct Vector position;
     struct Vector speed;
-    double dispDirectionCurrent;
     struct MotStruct motStruct;
     int8_t stickPosition; // -72 to +72 inclusive
     float baseSpeed;
@@ -81,6 +80,12 @@ void nosediveCalc(struct Player *player);
 /** ???
 Author: Malleo */
 void taildiveCalc(struct Player *player);
+/**
+*/
+void updatePos(struct Player *player);
+/**
+*/
+void interferenceCalc(struct Player *player, struct Result *nextFrame, bool leftFlight);
 /** 
 Run a single frame of the game simulation. 
 Arguments:
