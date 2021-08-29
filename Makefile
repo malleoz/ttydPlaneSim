@@ -27,6 +27,8 @@ ${OBJ_DIR}/run_ga.o: ${SRC_DIR}/run_ga.c ${SRC_DIR}/run_ga.h ${OBJ_DIR}/run_simu
 ga_main: ${SRC_DIR}/ga_main.c ${OBJ_DIR}/run_ga.o ${OBJ_DIR}/run_simulation.o ${OBJ_DIR}/plane_physics.o
 	${CC} ${CFLAGS} ${GAUL_FLAGS} -o$@ $^ ${CLIBS} ${GAUL_LIBS}
 
+simulate_single: ${SRC_DIR}/simulate_single.c ${OBJ_DIR}/run_simulation.o ${OBJ_DIR}/plane_physics.o ${SRC_DIR}/run_simulation.h ${SRC_DIR}/plane_physics.h
+	${CC} ${CFLAGS} -o$@ ${SRC_DIR}/simulate_single.c ${OBJ_DIR}/run_simulation.o ${OBJ_DIR}/plane_physics.o ${CLIBS}
 # Prologue
 tyd_east_room: ga_main playerdats/tyd_east_room.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
