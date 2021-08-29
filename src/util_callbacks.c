@@ -219,10 +219,6 @@ bool plane_generation_hook(int generation, population *pop){
         }
         struct Player final;
         if (collide == -1) collide = pop->len_chromosomes-1;
-        final = ((entity_chrom *)best->chromosome[0])
-                ->results[collide].player;
-        printf("\tdist_x: %f dist_y %f\n", distance_to_go_x(final),
-            distance_to_go_y(final));
         if(usingInterference() && intCollideFrame > 0){
             struct Player interfereFinal; 
             interfereFinal = ((entity_chrom *) best
@@ -233,6 +229,10 @@ bool plane_generation_hook(int generation, population *pop){
                 interference_distance_to_go_y(interfereFinal));
             collide = intCollideFrame;
         }
+        final = ((entity_chrom *)best->chromosome[0])
+                ->results[collide].player;
+        printf("\tdist_x: %f dist_y %f\n", distance_to_go_x(final),
+            distance_to_go_y(final));
         FILE *outFile = ((pop_data *)pop->data)->outFile;
         fprintf(outFile, "%d,%d,%f,%f,%f", generation, collide, best->fitness,
                 distance_to_go_x(final), distance_to_go_y(final));
