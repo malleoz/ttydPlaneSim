@@ -5,7 +5,7 @@ CC = gcc
 #MMTrebuchet's version:
 GAUL_BASE = /home/pi/gaul-install
 GAUL_FLAGS = -L${GAUL_BASE}/lib -I${GAUL_BASE}/include 
-CFLAGS = -g -O3
+CFLAGS = -g -O3 -Wall -Wextra 
 CLIBS = -lm
 GAUL_LIBS = -lgaul -lgaul_util
 GAUL_THREADS = 4
@@ -65,7 +65,7 @@ flurrie_unraised: ga_main playerdats/flurrie_unraised.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \
 		--player-dat=playerdats/flurrie_unraised.dat \
 		--output-file=simRes_flurrie_unraised.txt \
-		--pop-size=2500 \
+		--pop-size=1500 \
 		--max-frames=450 \
 		--num-generations=50000
 

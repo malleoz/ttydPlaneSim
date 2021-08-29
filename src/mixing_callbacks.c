@@ -9,6 +9,50 @@ void validateNumber(int value, int min, int max, char *name){
     }
 }
 
+void getCrossPoints(population *pop, entity_chrom *parent, int *cross_start, int *cross_end){
+    int len_chrom = parent->collideFrame;
+    if(len_chrom < 3 || len_chrom >= pop->len_chromosomes){
+        len_chrom = pop->len_chromosomes;
+    }
+    getSplitPoints(len_chrom, cross_start, cross_end);
+    validateNumber(len_chrom, 3, pop->len_chromosomes, "len chrom.");
+    if(*cross_end - *cross_start > 40){
+        int new_end = (*cross_start + (*cross_end) * 3) / 4;
+        *cross_start = (*cross_start * 3 + *cross_end) / 4;
+        *cross_end = new_end;
+    }
+    if(*cross_end < *cross_start + 3){
+        if(*cross_start > 15){
+            *cross_start -= 10;
+        }else{
+            *cross_end += 10;
+        }
+    }
+    validateNumber(*cross_start, 0, *cross_end, "Cross start.");
+    validateNumber(*cross_end, *cross_start, len_chrom, "Cross end");
+}
+
+void copyStretch(int8_t * parent, int8_t *child, int parent_start, int parent_stop, int child_start, int child_stop){
+    int len_parent = parent_stop - parent_start;
+    int len_child = child_stop - child_start;
+    //Now copy in the split to the daughter from the father
+    for(int pos =child_start; pos < child_stop; pos++){
+        int sourceIndex = parent_start + 
+            ((pos - child_start) * len_parent) / (len_child);
+        float source_float = parent_start + 
+            ((pos - child_start) * len_parent*1.0) / (len_child*1.0);
+        float offset = source_float - sourceIndex;
+
+        int8_t sourceValue = parent[sourceIndex];
+        int8_t nextValue = parent[sourceIndex+1];
+        float interpValue = nextValue * offset + sourceValue * (1-offset);
+        validateNumber((int8_t) interpValue, -72, 72, "child interp value.");
+        validateNumber(pos, child_start, child_stop, "Daughter write pos");
+        child[pos] = (int8_t) interpValue;
+    }
+}
+    
+
 //Choose one random region in each of the parents 
 //(The regions will not be of the same size)
 //Then swap those regions, stretching or squooshing the 
@@ -28,86 +72,15 @@ void plane_crossover_region_scaling(population *pop,
         daughter_chrom[pos] = mother_chrom[pos];
     }
 
-    int cross_start_mother, cross_end_mother, cross_start_father, cross_end_father, len_mother, len_father, sourceIndex, sourceValue, nextValue;
-    float source_float, offset, interpValue;
-    int len_father_chrom = ((entity_chrom *) father->chromosome[0])->collideFrame;
-    int len_mother_chrom = ((entity_chrom *) mother->chromosome[0])->collideFrame;
-    if(len_father_chrom < 3 || len_father_chrom >= pop->len_chromosomes) 
-        len_father_chrom = pop->len_chromosomes;
-    if(len_mother_chrom < 3 || len_mother_chrom >= pop->len_chromosomes) 
-        len_mother_chrom = pop->len_chromosomes;
-
-    getSplitPoints(len_father_chrom, &cross_start_father, &cross_end_father);
-    validateNumber(len_father_chrom, 3, pop->len_chromosomes, "len father chrom.");
-    if(cross_end_father > cross_start_father + 40){
-        int new_cross_end_father = (cross_start_father + cross_end_father * 3) / 4;
-        cross_start_father = (cross_start_father * 3 + cross_end_father) / 4;
-        cross_end_father = new_cross_end_father;
-    }
-    if(cross_end_mother > cross_start_mother + 40){
-        int new_cross_end_mother = (cross_start_mother + cross_end_mother * 3) / 4;
-        cross_start_mother = (cross_start_mother * 3 + cross_end_mother) / 4;
-        cross_end_mother = new_cross_end_mother;
-    }
-    
-    if(cross_end_father < cross_start_father + 3){
-        if(cross_start_father > 15){
-            cross_start_father -= 10;
-        }else{
-            cross_end_father += 10;
-        }
-    }
-
-    if(cross_end_mother < cross_start_mother + 3){
-        if(cross_start_mother > 15){
-            cross_start_mother -= 10;
-        }else{
-            cross_end_mother += 10;
-        }
-    }
-
-    validateNumber(cross_start_father, 0, cross_end_father, "Cross start father");
-    validateNumber(cross_end_father, cross_start_father, len_father_chrom, "cross end father");
+    int cross_start_mother, cross_end_mother, cross_start_father, cross_end_father;
+    getCrossPoints(pop, (entity_chrom *) father->chromosome[0], &cross_start_father, &cross_end_father);
+    getCrossPoints(pop, (entity_chrom *) mother->chromosome[0], &cross_start_mother, &cross_end_mother);
 
 
-    getSplitPoints(len_mother_chrom, &cross_start_mother, &cross_end_mother);
-    validateNumber(len_mother_chrom, 3, pop->len_chromosomes, "len mother chrom.");
-    validateNumber(cross_start_mother, 0, cross_end_mother, "Cross start mother");
-    validateNumber(cross_end_mother, cross_start_mother, len_mother_chrom, "cross end mother");
     //printf("Split %d %d %d %d %d %d\n", len_father_chrom, cross_start_father, cross_end_father, len_mother_chrom, cross_start_mother, cross_end_mother);
-    len_mother = cross_end_mother - cross_start_mother;
-    len_father = cross_end_father - cross_start_father;
-    validateNumber(len_father, 1, len_father_chrom, "Father length");
-    validateNumber(len_mother, 1, len_mother_chrom, "Mother length");
-    //Now copy in the split to the daughter from the father
-    for(int pos = cross_start_mother; pos < cross_end_mother; pos++){
-        sourceIndex = cross_start_father + 
-            ((pos - cross_start_mother) * len_father) / (len_mother);
-        source_float = cross_start_father + 
-            ((pos - cross_start_mother) * len_father*1.0) / (len_mother*1.0);
-        offset = source_float - sourceIndex;
 
-        sourceValue = mother_chrom[sourceIndex];
-        nextValue = mother_chrom[sourceIndex+1];
-        interpValue = nextValue * offset + sourceValue * (1-offset);
-        validateNumber((int8_t) interpValue, -72, 72, "daughter interp value.");
-        validateNumber(pos, cross_start_mother, cross_end_mother, "Daughter write pos");
-        daughter_chrom[pos] = (int8_t) interpValue;
-    }
-    
-    for(int pos = cross_start_father; pos < cross_end_father; pos++){
-        sourceIndex = cross_start_mother + ((pos - cross_start_father) * len_mother) / len_father;
-        if(sourceIndex > pop->len_chromosomes) printf("%d %d %d %d %d %d\n", sourceIndex, cross_start_father, pos, cross_start_mother, len_father, len_mother);
-        source_float = cross_start_mother + 
-            ((pos - cross_start_father) * len_mother * 1.0) / (len_father*1.0);
-        offset = source_float - sourceIndex;
-        sourceValue = father_chrom[sourceIndex];
-        nextValue = father_chrom[sourceIndex + 1];
-        interpValue = nextValue * offset + sourceValue *(1-offset);
-        validateNumber((int8_t) interpValue, -72, 72, "son interp value.");
-        validateNumber(pos, cross_start_father, cross_end_father, "Son write pos");
-        son_chrom[pos] = (int8_t) interpValue;
-    }
+    copyStretch(father_chrom, daughter_chrom, cross_start_father, cross_end_father, cross_start_mother, cross_end_mother);
+    copyStretch(mother_chrom, son_chrom, cross_start_mother, cross_end_mother, cross_start_father, cross_end_father);
     
 }
 

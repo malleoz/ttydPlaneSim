@@ -6,7 +6,6 @@
 //You shouldn't need to change this unless you change the 
 //entity_chrom struct. 
 bool plane_chromosome_constructor(population *pop, entity *embryo){
-    int frameIdx; 
     if(!pop) die("No pointer to population!");
     if(!embryo) die("No pointer to adam element.");
     if(embryo->chromosome != NULL) die("This embryo was already initalized!");

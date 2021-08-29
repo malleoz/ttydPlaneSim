@@ -156,7 +156,6 @@ static boolean plane_score_no_interference(population *pop, entity *entity){
                   pop->len_chromosomes);
     double score = 3*FAIL_PENALTY;
     mem->collideFrame = collideFrame;
-    int intCollideFrame, intReachFrame, intLandFrame;
        
         
     if(collideFrame == -1){
@@ -210,6 +209,7 @@ bool plane_generation_hook(int generation, population *pop){
 
         int collide = ((entity_chrom *) best->chromosome[0])->collideFrame;
         int intReachFrame, intLandFrame, intCollideFrame;
+        intCollideFrame = -1;
         printf("Generation %d, Collided on %d, best fitness %f\n", generation, 
             collide,    
             best->fitness);
@@ -245,6 +245,7 @@ bool plane_generation_hook(int generation, population *pop){
                 curPlayer.position.z,
                 curPlayer.baseSpeed);
         }
-        fprintf(outFile, "\n", generation);
+        fprintf(outFile, "\n");
     }
+    return true;
 }
