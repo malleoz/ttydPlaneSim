@@ -298,23 +298,54 @@ void taildiveCalc(Player *player) {
     motStruct->rot.x = motStruct->rot.x + wySpeed;
 }
 
+void updatePos(Player *player) {
+    MotStruct *motStruct = &player->motStruct;
+    float local_2c;
+    float local_30;
+    float local_34;
+    float local_38;
+    
+    player->position.y = player->position.y + motStruct->ySpeed - 0.2;
+
+    player->wDirectionView = motStruct->rot.y;
+
+    sincosf(player->wDirectionView,&local_34,&local_38);
+
+    player->position.z += player->baseSpeed * local_38;
+
+    sincosf(90.0 + motStruct->rot.x,&local_2c,&local_30);
+    
+    if (local_30 > 0.0) {
+        local_30 *= 1.2;
+    }
+    
+    player->position.y = player->baseSpeed * local_30 + player->position.y;
+    player->position.x += local_2c * player->baseSpeed * local_34;
+}
+
+void interferenceCalc(Player *player, Result *nextFrame, bool leftFlight) {
+    if  ((leftFlight && player->position.x < interferenceX2) || (!leftFlight && player->position.x > interferenceX1)) {
+        nextFrame->reachedInterference = true;
+    	    
+    	if (player->position.y < interferenceY && ((leftFlight && player->position.x > interferenceX1) || (!leftFlight && player->position.x < interferenceX2))) {
+    	    nextFrame->collidedInterference = true;
+    	    
+    	    if ((leftFlight && interferenceX2 - player->position.x > 5) || (!leftFlight && player->position.x - interferenceX1 > 5)) {
+    	        // If x is sufficiently far into collision, then we must have landed on top
+    	        nextFrame->landedInterference = true;
+    	    }
+        }
+    }
+}
+
 // Main simulation routine
 // Given a Gamecube x-axis analog stick position and the previousFrame state, compute the nextFrame state
 void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFrame) {
     Player player = *previousFrame;
     player.stickPosition = stickPosition;
     MotStruct *motStruct = &player.motStruct; // shorthand for later
-
-    float yPivot;
-    float local_2c;
-    float local_30;
-    float local_34;
-    float local_38;
     
-    motStruct->rot.y = revise360((double)(motStruct->rot.z * 0.025 + motStruct->rot.y));
-
-    // Normalize the calculated y-axis rotation
-    player.dispDirectionCurrent = revise360(motStruct->rot.y);
+    motStruct->rot.y = revise360(motStruct->rot.z * 0.025 + motStruct->rot.y);
 
     // If analog stick is neutral
     if (player.stickPosition == 0) {
@@ -328,39 +359,18 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
     // Apply a static speed decrease, before factoring in rotation
     player.baseSpeed = player.baseSpeed * -0.02 + player.baseSpeed;
     
-    // If nosediving
-    if (motStruct->rot.x < 0) {
+    if (motStruct->rot.x < 0) { // If nosediving
         nosediveCalc(&player);
     }
-    // If we're not nosediving...
-    else {
+    else { // If we're not nosediving...
         taildiveCalc(&player);
     }
     
-    // Enforce speedcap
     if (5.0 <= player.baseSpeed) {
-        player.baseSpeed = 5.0;
+        player.baseSpeed = 5.0; // Enforce speedcap
     }
-
-    player.position.y = player.position.y + motStruct->ySpeed - 0.2;
-
-    player.wDirectionView = motStruct->rot.y;
-
-    sincosf(player.wDirectionView,&local_34,&local_38);
-
-    (player.position).z += player.baseSpeed * local_38;
-
-    sincosf(90.0 + motStruct->rot.x,&local_2c,&local_30);
     
-    yPivot = 1.0;
-    
-    if (local_30 > 0.0) {
-        yPivot = 1.2;
-    }
-
-    (player.position).y = player.baseSpeed * local_30 * yPivot + (player.position).y;
-    
-    player.position.x += local_2c * player.baseSpeed * local_34;
+    updatePos(&player);
 
     // Code relating to a "timeout" has been ommitted.
     // If Mario has speed < 0.8 for 90 frames, he will be forced out of plane.
@@ -371,8 +381,9 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
     nextFrame->player   = player;
     nextFrame->collided = false;
     nextFrame->landed   = false;
-
-    //Check to see if we have landed or bonked
+    nextFrame->reachedInterference = false;
+    nextFrame->collidedInterference = false;
+    nextFrame->landedInterference = false;
 
     // Determine if we have made contact with the landing wall, with varying logic depending on direction of flight
     bool leftFlight = (motStruct->flags & 1) == 0;
@@ -386,23 +397,8 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
     }
 
     // Determine if we have intersected any interfering piece of collision
-    nextFrame->reachedInterference = false;
-    nextFrame->collidedInterference = false;
-    nextFrame->landedInterference = false;
-    
     if (interferencePresent) {
-        if  ((leftFlight && player.position.x < interferenceX2) || (!leftFlight && player.position.x > interferenceX1)) {
-            nextFrame->reachedInterference = true;
-    	    
-    	    if (player.position.y < interferenceY && ((leftFlight && player.position.x > interferenceX1) || (!leftFlight && player.position.x < interferenceX2))) {
-    		nextFrame->collidedInterference = true;
-    		    
-    		if ((leftFlight && interferenceX2 - player.position.x > 5) || (!leftFlight && player.position.x - interferenceX1 > 5)) {
-        	    // If x is sufficiently far into collision, then we must have landed on top
-                   nextFrame->landedInterference = true;
-    		}
-    	    }
-    	}
+        interferenceCalc(&player, nextFrame, leftFlight);
     }
 
     return;
