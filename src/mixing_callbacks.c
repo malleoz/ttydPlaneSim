@@ -96,8 +96,8 @@ void plane_crossover_region_scaling(population *pop,
             ((pos - cross_start_mother) * len_father*1.0) / (len_mother*1.0);
         offset = source_float - sourceIndex;
 
-        sourceValue = mother_chrom[sourceIndex];
-        nextValue = mother_chrom[sourceIndex+1];
+        sourceValue = father_chrom[sourceIndex];
+        nextValue = father_chrom[sourceIndex+1];
         interpValue = nextValue * offset + sourceValue * (1-offset);
         validateNumber((int8_t) interpValue, -72, 72, "daughter interp value.");
         validateNumber(pos, cross_start_mother, cross_end_mother, "Daughter write pos");
@@ -110,8 +110,8 @@ void plane_crossover_region_scaling(population *pop,
         source_float = cross_start_mother + 
             ((pos - cross_start_father) * len_mother * 1.0) / (len_father*1.0);
         offset = source_float - sourceIndex;
-        sourceValue = father_chrom[sourceIndex];
-        nextValue = father_chrom[sourceIndex + 1];
+        sourceValue = mother_chrom[sourceIndex];
+        nextValue = mother_chrom[sourceIndex + 1];
         interpValue = nextValue * offset + sourceValue *(1-offset);
         validateNumber((int8_t) interpValue, -72, 72, "son interp value.");
         validateNumber(pos, cross_start_father, cross_end_father, "Son write pos");

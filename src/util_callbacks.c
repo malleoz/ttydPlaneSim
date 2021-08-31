@@ -70,7 +70,7 @@ static boolean plane_score(population *pop, entity *entity){
         }
     }
     entity->fitness = score;
-    printf("EVAL. Entity info:\n");
+    printf("EVAL: Entity %d\n", ((entity_chrom *) entity->chromosome[0])->name);
     print_entity(pop, entity);
     printf("Evaluation: %f\n", score); 
     //Since we account for failing to land at all with the penalty function
