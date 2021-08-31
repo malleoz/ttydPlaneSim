@@ -94,17 +94,10 @@ void neutralCalc(Player *player) {
 
     if ((motStruct->rot.x <= 0.0) || (motStruct->pitchRate <= 0.0)) // If nosediving or (some form of acceleration?)
     {
-        float baseSpeed = 5.0 - player->baseSpeed;
+        float speedRemaining = 5.0 - player->baseSpeed;
 
-        if (baseSpeed < 0.0) {
-            baseSpeed = 0.0;
-        }
-
-        double dVar8 = dsin(baseSpeed * 18.0);
-        double dispDirectionCurrent = -4.0 * dVar8;
-        
-        if (-4.0 * dVar8 <= -2.0) {
-            dispDirectionCurrent = -2.0;
+        if (speedRemaining < 0.0) {
+            speedRemaining = 0.0;
         }
 	
     	bool flyRight = motStruct->flags & 1;
@@ -118,21 +111,20 @@ void neutralCalc(Player *player) {
             }
         }
         else {
-	    motStruct->index7 = -4.0 * dVar8;
+	    motStruct->index7 = -4.0 * dsin(speedRemaining * 18.0);
 	    
 	    if (motStruct->index7 <= -2.0) {
 		motStruct->index7 = -2.0;
 	    }
 
-            motStruct->rot.x = motStruct->rot.x + motStruct->index7;
+            motStruct->rot.x += motStruct->index7;
         }
     }
     
     if (motStruct->rot.x <= -45.0) {
         motStruct->rot.x = -45.0; // Restrict maximum (negative) nosedive angle
     }
-
-    if (6.0 <= motStruct->rot.x) {
+    else if (6.0 <= motStruct->rot.x) {
         motStruct->pitchRate = 0.0;
     }
 }
@@ -143,7 +135,7 @@ void nonNeutralCalc(Player *player) {
     int stickMag = abs(player->stickPosition); // magnitude
     bool flyRight = motStruct->flags & 1;
     
-    if ((!flyRight && player->stickPosition > 0) || (flyRight && player->stickPosition < 0)) { // If (flying left and holding right) or (flying right and holding left)
+    if (flyRight ? player->stickPosition < 0 : player->stickPosition > 0) { // If (flying left and holding right) or (flying right and holding left)
         if (motStruct->rot.x < 25.0) {
             motStruct->rot.x = 0.04 * stickMag + motStruct->rot.x;
         }
@@ -152,7 +144,7 @@ void nonNeutralCalc(Player *player) {
         }
     }
     
-    if (!flyRight && player->stickPosition < 0) { // If flying to the left
+    if (flyRight ? player->stickPosition > 0 : player->stickPosition < 0) { // if (flying left and holding left) or (flying right and holding right)
         if (-45.0 < motStruct->rot.x) {
             motStruct->rot.x = -(0.1 * stickMag - motStruct->rot.x);
         }
@@ -160,30 +152,16 @@ void nonNeutralCalc(Player *player) {
             motStruct->rot.x = -45.0; // Restrict maximum (negative) nosedive angle
         }
     }
-    else if (flyRight && 0 < player->stickPosition) { // If flying to the right
-        if (-45.0 < motStruct->rot.x) {
-            motStruct->rot.x = -(0.1 * stickMag - motStruct->rot.x);
-        }
-        else {
-            motStruct->rot.x = -45.0; // Reduce maximum (negative) nosedive angle
-        }
-    }
 }
 
 // This function is reached when the plane's rotation is negative
 void nosediveCalc(Player *player) {
     MotStruct *motStruct = &player->motStruct;
+    
     motStruct->flags = motStruct->flags & 0xffffffef; // Flag for nosedive
     motStruct->index4 = 0.2 * dsin(1.5 * fabs(motStruct->rot.x));
-
-    player->baseSpeed = player->baseSpeed + motStruct->index4;
-
-    double dispDirectionCurrent = dsin(3.4 * fabs(motStruct->rot.x));
-    
-    double dVar8 = dispDirectionCurrent;
-    dispDirectionCurrent = dsin(player->baseSpeed * 0.05);
-
-    motStruct->pitchRate = motStruct->pitchRate + 1.0 * dispDirectionCurrent * dVar8;
+    player->baseSpeed += motStruct->index4;
+    motStruct->pitchRate = motStruct->pitchRate + 1.0 * dsin(0.05 * player->baseSpeed) * dsin(3.4 * fabs(motStruct->rot.x));
 
     bool flyLeft = (motStruct->flags & 1) == 0 ? true : false;
     bool above_panel = flyLeft ? player->position.x > platformX : player->position.x < platformX;
@@ -195,13 +173,9 @@ void nosediveCalc(Player *player) {
             }
         }
         
-    	if (!above_panel) {
-            float temp7 = 0.1 * (1 - motStruct->index7) + motStruct->index7;
-
-	    if (motStruct->index7 > temp7) {
-                motStruct->index7 = temp7;
-	    }
-	}
+    	if (!above_panel && motStruct->index7 > 1) {
+                motStruct->index7 += 0.1 * (1 - motStruct->index7);
+        }
     }
      
     if (above_panel) {
@@ -217,18 +191,19 @@ void nosediveCalc(Player *player) {
         motStruct->rot.x = motStruct->index9;
     }
     
-    motStruct->ySpeed = motStruct->ySpeed - (0.1 * motStruct->ySpeed);
+    motStruct->ySpeed -= 0.1 * motStruct->ySpeed;
 }
 
 // This function is reached when the plane's rotation is positive
 void taildiveCalc(Player *player) {
     MotStruct *motStruct = &player->motStruct;
+    
     motStruct->flags = motStruct->flags | 0x10; // Set the taildive flag to represent rot.x > 0
 
-    player->baseSpeed = player->baseSpeed + player->baseSpeed * -0.1 * dsin(motStruct->rot.x * 0.1);
+    player->baseSpeed += -0.1 * player->baseSpeed * dsin(motStruct->rot.x * 0.1);
     
     if ((player->stickPosition != 0) && (25.0 <= motStruct->rot.x)) {
-        player->baseSpeed = player->baseSpeed - 0.03;
+        player->baseSpeed -= 0.03;
     }
 
     if (player->baseSpeed <= 0.0) {
@@ -236,7 +211,7 @@ void taildiveCalc(Player *player) {
     }
 
     float pitchRate = 0.0;
-    float wySpeed;
+    float speedRemaining = 5.0 - player->baseSpeed;
 
     // If holding neutral...
     if (player->stickPosition == 0) {
@@ -244,17 +219,15 @@ void taildiveCalc(Player *player) {
             motStruct->pitchRate = 0.118;
         }
         else {
-            float dVar8 = (double)(5.0 - player->baseSpeed);
-            pitchRate = dVar8 * -0.112 * dsin(motStruct->rot.x) + motStruct->pitchRate;
-
+            pitchRate = speedRemaining * -0.112 * dsin(motStruct->rot.x) + motStruct->pitchRate;
             motStruct->pitchRate = pitchRate;
         }
 
-        motStruct->rot.x = motStruct->rot.x + motStruct->pitchRate;
+        motStruct->rot.x += motStruct->pitchRate;
 
         if ((pitchRate <= 0) && (player->baseSpeed <= 2.5)) {
 
-            pitchRate = -(player->baseSpeed * 0.4 - 5.0);
+            pitchRate = 5.0 - 0.4 * player->baseSpeed;
 
             if (pitchRate <= 0) {
                 pitchRate = 0;
@@ -272,30 +245,25 @@ void taildiveCalc(Player *player) {
 	    }
         }
 
-        motStruct->rot.x = motStruct->rot.x + motStruct->index7;
+        motStruct->rot.x += motStruct->index7;
     }
-
+     
     // If holding neutral
     if (player->stickPosition == 0) {
-
-        wySpeed = motStruct->ySpeed;
-
-        wySpeed = 0.1 * -wySpeed + wySpeed;
-
-        motStruct->ySpeed = wySpeed;
+        pitchRate = -0.1 * motStruct->ySpeed + motStruct->ySpeed;
+        motStruct->ySpeed = pitchRate;
     }
     // If holding a direction
     else {
-        wySpeed = -0.3 * sin((double)((gPi * (5.0 - player->baseSpeed)) / 180.0));
-
-        motStruct->ySpeed = motStruct->ySpeed + wySpeed;
+        pitchRate = -0.3 * dsin(speedRemaining);
+        motStruct->ySpeed += pitchRate;
 
         if (motStruct->ySpeed <= -5.0) {
             motStruct->ySpeed = -5.0;
         }
     }
 
-    motStruct->rot.x = motStruct->rot.x + wySpeed;
+    motStruct->rot.x += pitchRate;
 }
 
 void updatePos(Player *player) {
@@ -305,32 +273,31 @@ void updatePos(Player *player) {
     float local_34;
     float local_38;
     
-    player->position.y = player->position.y + motStruct->ySpeed - 0.2;
-
+    player->position.y = player->position.y + motStruct->ySpeed - 0.2; // Written out as the shorthand += results in floating point inaccuracy
+   
     player->wDirectionView = motStruct->rot.y;
-
+    
     sincosf(player->wDirectionView,&local_34,&local_38);
-
     player->position.z += player->baseSpeed * local_38;
-
+    
     sincosf(90.0 + motStruct->rot.x,&local_2c,&local_30);
     
     if (local_30 > 0.0) {
         local_30 *= 1.2;
     }
     
-    player->position.y = player->baseSpeed * local_30 + player->position.y;
+    player->position.y += player->baseSpeed * local_30;
     player->position.x += local_2c * player->baseSpeed * local_34;
 }
 
-void interferenceCalc(Player *player, Result *nextFrame, bool leftFlight) {
-    if  ((leftFlight && player->position.x < interferenceX2) || (!leftFlight && player->position.x > interferenceX1)) {
+void interferenceCalc(Player *player, Result *nextFrame, bool rightFlight) {
+    if  (rightFlight ? player->position.x > interferenceX1 : player->position.x < interferenceX2) { // If player has reached the edge of interference
         nextFrame->reachedInterference = true;
     	    
-    	if (player->position.y < interferenceY && ((leftFlight && player->position.x > interferenceX1) || (!leftFlight && player->position.x < interferenceX2))) {
+    	if (player->position.y < interferenceY && (rightFlight ? player->position.x < interferenceX2 : player->position.x > interferenceX1)) {
     	    nextFrame->collidedInterference = true;
     	    
-    	    if ((leftFlight && interferenceX2 - player->position.x > 5) || (!leftFlight && player->position.x - interferenceX1 > 5)) {
+    	    if (rightFlight ? (player->position.x - interferenceX1 > 5) : (interferenceX2 - player->position.x > 5)) {
     	        // If x is sufficiently far into collision, then we must have landed on top
     	        nextFrame->landedInterference = true;
     	    }
@@ -341,8 +308,8 @@ void interferenceCalc(Player *player, Result *nextFrame, bool leftFlight) {
 // Main simulation routine
 // Given a Gamecube x-axis analog stick position and the previousFrame state, compute the nextFrame state
 void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFrame) {
-    Player player = *previousFrame;
-    player.stickPosition = stickPosition;
+    Player player = *previousFrame; // Copy player obj to later store in nextFrame
+    player.stickPosition = stickPosition; // Store this frame's input
     MotStruct *motStruct = &player.motStruct; // shorthand for later
     
     motStruct->rot.y = revise360(motStruct->rot.z * 0.025 + motStruct->rot.y);
@@ -356,13 +323,13 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
         nonNeutralCalc(&player);   
     }
     
-    // Apply a static speed decrease, before factoring in rotation
-    player.baseSpeed = player.baseSpeed * -0.02 + player.baseSpeed;
+    player.baseSpeed -= 0.02 * player.baseSpeed; // static speed decrease, before factoring in rotation
     
-    if (motStruct->rot.x < 0) { // If nosediving
+    bool nosediving = motStruct->rot.x < 0;
+    if (nosediving) {
         nosediveCalc(&player);
     }
-    else { // If we're not nosediving...
+    else {
         taildiveCalc(&player);
     }
     
@@ -370,11 +337,7 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
         player.baseSpeed = 5.0; // Enforce speedcap
     }
     
-    updatePos(&player);
-
-    // Code relating to a "timeout" has been ommitted.
-    // If Mario has speed < 0.8 for 90 frames, he will be forced out of plane.
-    // Under no circumstance will this happen.
+    updatePos(&player); // Given the prior physics calcs, compute new position vals
 
     // The frame has ended.
     // set up the result struct
@@ -386,8 +349,8 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
     nextFrame->landedInterference = false;
 
     // Determine if we have made contact with the landing wall, with varying logic depending on direction of flight
-    bool leftFlight = (motStruct->flags & 1) == 0;
-    if (leftFlight ? (player.position.x <= landingX) : (player.position.x >= landingX)) {
+    bool rightFlight = motStruct->flags & 1;
+    if (rightFlight ? (player.position.x >= landingX) : (player.position.x <= landingX)) {
         nextFrame->collided = true;
 
         // If we're also above the landing platform, then we have landed
@@ -398,7 +361,7 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
 
     // Determine if we have intersected any interfering piece of collision
     if (interferencePresent) {
-        interferenceCalc(&player, nextFrame, leftFlight);
+        interferenceCalc(&player, nextFrame, rightFlight);
     }
 
     return;
@@ -406,13 +369,13 @@ void frameSim(signed char stickPosition, Player *previousFrame, Result *nextFram
 
 // returns < 0 if we overshot, > 0 if we haven't hit it yet
 float distance_to_go_x(Player p) {
-    bool flyLeft = (p.motStruct.flags & 1) == 0 ? true : false; // Flight direction
+    bool rightFlight = p.motStruct.flags & 1;
 
-    if (flyLeft) {
-        return p.position.x - landingX;
+    if (rightFlight) {
+        return landingX - p.position.x;
     }
     else {
-        return landingX - p.position.x;
+        return p.position.x - landingX;
     }
 }
 
@@ -422,13 +385,13 @@ float distance_to_go_y(Player p) {
 }
 
 float interference_distance_to_go_x(Player p) {
-    bool flyLeft = (p.motStruct.flags & 1) == 0 ? true : false;
+    bool flyRight = p.motStruct.flags & 1;
 
-    if (flyLeft) {
-        return p.position.x - interferenceX2;
+    if (flyRight) {
+        return interferenceX1 - p.position.x;
     }
     else {
-    	return interferenceX1 - p.position.x;
+    	return p.position.x - interferenceX2;
     }
 }
 

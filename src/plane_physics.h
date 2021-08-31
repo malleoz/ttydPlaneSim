@@ -85,7 +85,7 @@ void taildiveCalc(struct Player *player);
 void updatePos(struct Player *player);
 /**
 */
-void interferenceCalc(struct Player *player, struct Result *nextFrame, bool leftFlight);
+void interferenceCalc(struct Player *player, struct Result *nextFrame, bool rightFlight);
 /** 
 Run a single frame of the game simulation. 
 Arguments:
