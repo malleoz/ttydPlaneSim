@@ -14,14 +14,11 @@ This process is repeated until the algorithm has devised an optimal input string
 1. Use Debug Dolphin Emulator to dump the game's RAM at the start of a plane flight.
    - Go to your Dolphin folder in Command Prompt and run the following: `Dolphin.exe -d`
    - Boot up the game
-   - On a Z-axis edge of the plane panel (such that you can nosedive right away), breakpoint at one of the following addresses:
-   ```
-   NTSC_U: 0x8009cae0
-   NTSC_J: 0x8009b1e8
-   ```
-   - Go to View and toggle Memory
+   - After the plane flight starting animation finishes, pause the game
+   - Click View and toggle Memory
+   - Go to the Memory window
    - Click `Dump MRAM`
-2. Run the following command using a Python version >= 3.7:
+2. Run the following command using Python 3.7 or later:
    ```
    ./export_player.py --ram A.raw --landingX B --landingY C --platformX D \
    --interferenceX1 E --interferenceX2 F --interferenceY G > playerdats/H.dat
@@ -29,14 +26,15 @@ This process is repeated until the algorithm has devised an optimal input string
    For the above command:
    - A is the filename of your RAM dump from step 1
    - B and C are the respective x and y float coordinate values of your desired landing position (can be approximate)
-   - D is the x-axis edge of the takeoff platform
+   - D is the x-axis edge of the takeoff platform (certain plane physics change once past this x-axis edge)
    - E, F, and G are only required when there is an interfering piece of collision in the middle of your flight, in which case E and F are x-axis coordinate values and G is a y-axis coordinate value, such that you are considered to be colliding with the interfering collision if you are between E and F and below G
    - H is the filename that you would like to use to represent the scenario provided from step 1
 3. Edit the Makefile to add another optimization at the bottom. Copy over one of the existing optimization runs (the ones that have ga\_main as a dependency) and change it to read in the appropriate player.dat file. Also change the name of the output file to something informative. 
 4. `make <<condition>>` to spin up the simulation! It will absolutely work the first time, no segfaults or linker errors. 
     5(a). Debug the makefile because it didn't work. If you have installed gaul somewhere unusual (like in your home directory), make sure you edit `GAUL_BASE` to point to this location. 
 5. To view the progress, use the included `plotResults.py` script. (Instructions will pop up when you `./plotResults.py` on the console.)
-
+6. Modify `TTYD-sim-to-inputs.lua` to read the generated .txt file, and run this script using [Dolphin Lua Core](https://github.com/SwareJonge/Dolphin-Lua-Core)
 
 ## Constraints and TODO
 - This program runs on Linux. MMTrebuchet wishes you luck if you want to cross-compile it for your OS of choice.
+- There is no known way to automatically pull the plane panel's x-axis edge from RAM. As a result, the user has to manually deduce what the edge is, which may lead to inaccurate physics calculations. A better understanding of the game's collision system is required to pull this information automatically.
