@@ -8,21 +8,21 @@ void validateNumber(int value, int min, int max, char *name){
         die("Value overflow.");
     }
 }
-
+#define MIN_FLIGHT_LENGTH 25
 void getCrossPoints(population *pop, entity_chrom *parent, int *cross_start, int *cross_end){
     int len_chrom = parent->collideFrame;
-    if(len_chrom < 3 || len_chrom >= pop->len_chromosomes){
+    if(len_chrom < MIN_FLIGHT_LENGTH || len_chrom >= pop->len_chromosomes){
         len_chrom = pop->len_chromosomes;
     }
     getSplitPoints(len_chrom, cross_start, cross_end);
-    validateNumber(len_chrom, 3, pop->len_chromosomes, "len chrom.");
+    validateNumber(len_chrom, MIN_FLIGHT_LENGTH, pop->len_chromosomes, "len chrom.");
     if(*cross_end - *cross_start > 40){
         int new_end = (*cross_start + (*cross_end) * 3) / 4;
         *cross_start = (*cross_start * 3 + *cross_end) / 4;
         *cross_end = new_end;
     }
     if(*cross_end < *cross_start + 3){
-        if(*cross_start > 15){
+        if(*cross_start > 10){
             *cross_start -= 10;
         }else{
             *cross_end += 10;
