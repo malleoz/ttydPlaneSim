@@ -163,12 +163,12 @@ void nosediveCalc(Player *player) {
     player->baseSpeed += motStruct->index4;
     motStruct->pitchRate = motStruct->pitchRate + 1.0 * dsin(0.05 * player->baseSpeed) * dsin(3.4 * fabs(motStruct->rot.x));
 
-    bool flyLeft = (motStruct->flags & 1) == 0 ? true : false;
-    bool above_panel = flyLeft ? player->position.x > platformX : player->position.x < platformX;
+    bool flyRight = motStruct->flags & 1;
+    bool above_panel = flyRight ? player->position.x < platformX : player->position.x > platformX;
 
     if (player->stickPosition != 0) { // If stick is not neutral
         if (1 <= motStruct->pitchRate) {
-            if (player->stickPosition > 0 || (player->stickPosition < 0 && (motStruct->flags & 1) == 0)) { // If (holding right) OR (holding left and flying left)
+            if (player->stickPosition > 0 || (player->stickPosition < 0 && !flyRight)) { // If (holding right) OR (holding left and flying left)
                 motStruct->pitchRate = 1;
             }
         }
