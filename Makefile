@@ -27,8 +27,8 @@ ${OBJ_DIR}/run_ga.o: ${SRC_DIR}/run_ga.c ${SRC_DIR}/run_ga.h ${OBJ_DIR}/run_simu
 ga_main: ${SRC_DIR}/ga_main.c ${OBJ_DIR}/run_ga.o ${OBJ_DIR}/run_simulation.o ${OBJ_DIR}/plane_physics.o
 	${CC} ${CFLAGS} ${GAUL_FLAGS} -o$@ $^ ${CLIBS} ${GAUL_LIBS}
 
-simulate_single: simulate_single.c run_simulation.h plane_physics.h run_simulation.o plane_physics.o
-	${CC} ${CFLAGS} -osimulate_single simulate_single.c run_simulation.o plane_physics.o ${CLIBS}
+simulate_single: src/simulate_single.c src/run_simulation.h src/plane_physics.h obj/run_simulation.o obj/plane_physics.o
+	${CC} ${CFLAGS} -osimulate_single src/simulate_single.c obj/run_simulation.o obj/plane_physics.o ${CLIBS}
 
 flurrie: ga_main playerdats/flurrie.dat
 	LD_LIBRARY_PATH=${GAUL_BASE}/lib GAUL_NUM_THREADS=${GAUL_THREADS} ./ga_main \

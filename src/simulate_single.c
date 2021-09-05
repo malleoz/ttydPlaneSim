@@ -61,6 +61,7 @@ void main(int argc, char **argv){
     fclose(playerDat);
     int8_t *inputs;
     int numFrames = readInputs(&inputs);
+    
     /*printf("%d frames\n", numFrames);
     for(int i = 0; i < numFrames; i++){
         printf("%d\n", inputs[i]);

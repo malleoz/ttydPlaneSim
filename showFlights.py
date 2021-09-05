@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+import argparse
+import matplotlib.pyplot as plt
+import numpy as np
+import subprocess
+import json
+from io import StringIO
+
+def intToSize(sizeid):
+    return [30, 50, 70, 200][sizeid]
+
+entityColors = dict()
+for line in open("colorInfo.dat", "r"):
+    lsp = line.split()
+    eid = int(lsp[0])
+    if(eid not in entityColors):
+        entityColors[eid] = dict()
+    entityColors[eid][int(lsp[2])] = int(lsp[1])
+def entityToColorID(entityId, generation):
+    possibles = entityColors[entityId]
+    rv = -1
+    for i in range(generation+1):
+        if(i in possibles):
+            rv = possibles[i]
+    return rv
+
+   
+def intToColor(colorid):
+    colors = [  
+                #[0,0,0], 
+                #[0, 0x49, 0x49],
+                [0, 0x92, 0x92], 
+                [0xff, 0x6d, 0xb6],
+                #[0xff, 0xb6, 0xdb],
+                [0x49, 0, 0x92],
+                [0, 0x6d, 0xdb],
+                #[0xb6, 0x6d, 0xff],
+                #[0x6d, 0xb6, 0xff],
+                #[0xb6, 0xdb, 0xff],
+                [0x92, 0, 0],
+                #[0x92, 0x49, 0],
+                #[0xdb, 0x6d, 0],
+                [0x24, 0xff, 0x24],
+                [0xff, 0xff, 0x6d]]
+    color = colors[colorid % len(colors)]
+    
+    return [color[0] / 256, color[1] / 256, color[2] / 256, 1]
+class Flight:
+    def __init__(self, inJson, generation, colorByParents=False):
+        self._inputs = np.array(inJson["inputs"])
+        self._colors = []
+        source = inJson["source"]
+        if(colorByParents and source["type"] != "seed"):
+            color1 = intToColor(entityToColorID(source["parent"], generation-1))
+            if(source["type"] == "interp"):
+                color2 = intToColor(entityToColorID(source["otherParent"], generation-1))
+                otherSize = source["crossEnd"] - source["crossStart"]
+                finalSize = 100 - source["crossEnd"]
+                self._colors = [color1] * source["crossStart"] +\
+                                [color2] * otherSize + \
+                                [color1] * finalSize
+            else:
+                self._colors = [color1] * 100
+        else:
+            color1 = intToColor(entityToColorID(inJson["id"], generation))
+            self._colors = [color1] * 100
+        print(len(self._colors))
+        self._sizes = [intToSize(0)] * 100
+        bigSize = intToSize(3)
+        if(colorByParents):
+            if(source["type"] in ["ROFF", "RPOI"]):
+                self._sizes[int(source["args"][0])] = bigSize
+            elif(source["type"] in ["RDRI", "RSET"]):
+                for i in range(int(source["args"][0]), int(source["args"][1])):
+                    self._sizes[i] = bigSize
+            elif(source["type"] == "DILA"):
+                for arg in source["args"][1:]:
+                    self._sizes[int(arg)] = bigSize
+        
+        self.collideFrame = -1
+        self.evaluation = inJson["evaluation"]
+        self.source = inJson["source"]
+        self.id = inJson["id"]
+
+    def runSimulation(self):
+        with open("inputs.txt", "w") as outFile:
+            for elem in self._inputs:
+                outFile.write("{0:d}\n".format(elem))
+        with open("inputs.txt", "r") as inFile:
+            ret = subprocess.run(["./simulate_single", "--player-dat", "playerdats/blooper.dat"], stdin = inFile, capture_output = True, text=True)
+            so = StringIO(ret.stdout)
+            simRes = np.loadtxt(so)
+            collideStats = simRes[:,1]
+            self.collideFrame = np.argmax(collideStats)
+            self.landed = simRes[self.collideFrame, 2]
+            self.xPoses = simRes[:self.collideFrame+1, 4]
+            self.yPoses = simRes[:self.collideFrame+1, 5]
+            self.zPoses = simRes[:self.collideFrame+1, 6]
+            self.speeds = simRes[:self.collideFrame+1, 7]
+            self.dirs = simRes[:self.collideFrame+1, 8]
+        
+
+    def plotxy(self, ax):
+        ax.scatter(self.xPoses, self.yPoses, c=self._colors[:self.collideFrame+1], s=self._sizes)
+
+    def plotInputs(self, ax, offset, collideSize = False):
+        sizes = self._sizes
+        if(collideSize):
+            sizes = [intToSize(1)] * self.collideFrame + \
+                    [intToSize(0)] * (100 - self.collideFrame)
+        ax.scatter(range(100), self._inputs + offset, \
+                    c=self._colors, s=sizes)
+        ax.plot(range(100), self._inputs + offset, "k-")
+
+def prepXy(ax, yMin, yMax):
+    ax.plot([296.15, 296.15], [yMin, yMax], "b--")
+    ax.plot([525, 525, 530], [yMin, 10, 10], "b--")
+
+def showStart():
+    vals = json.load(open("fs_init.json"))
+    flights = [Flight(x) for x in vals]
+    [x.runSimulation() for x in flights]
+
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    yMin = min([min(f.yPoses) for f in flights])
+    yMax = max([max(f.yPoses) for f in flights])
+    prepXy(ax1, yMin, yMax)
+    for i, flight in enumerate(flights):
+        flight.plotInputs(ax2, 200*i, True)
+        flight.plotxy(ax1)
+    plt.show()
+
+def showByEval(inJson, entityIds, generation):
+    flights = []
+    for elem in inJson:
+        if(elem["id"] in entityIds):
+            flight = Flight(elem, generation, False)
+            flight.runSimulation()
+            flights.append(flight)
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    yMin = min([min(f.yPoses) for f in flights])
+    yMax = max([max(f.yPoses) for f in flights])
+    prepXy(ax1, yMin, yMax)
+    for i, flight in enumerate(flights):
+        flight.plotInputs(ax2, 200*i, True)
+        flight.plotxy(ax1)
+    plt.show()
+        
+def showByParents(inJson, entityIds, generation):
+    flights = []
+    for elem in inJson:
+        if(elem["id"] in entityIds):
+            flight = Flight(elem, generation, True)
+            flight.runSimulation()
+            flights.append(flight)
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    yMin = min([min(f.yPoses) for f in flights])
+    yMax = max([max(f.yPoses) for f in flights])
+    prepXy(ax1, yMin, yMax)
+    for i, flight in enumerate(flights):
+        flight.plotInputs(ax2, 200*i, False)
+        flight.plotxy(ax1)
+    plt.show()
+        
+    
+    
+
+def showFirstMixes():
+    vals = json.load(open("fs_firstmut.json"))
+    flights = [Flight(x) for x in vals[:15]]
+    [x.runSimulation() for x in flights]
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    yMin = min([min(f.yPoses) for f in flights])
+    yMax = max([max(f.yPoses) for f in flights])
+    prepXy(ax1, yMin, yMax)
+    for i, flight in enumerate(flights):
+        flight.plotInputs(ax2, 200*i, False)
+        flight.plotxy(ax1)
+    plt.show()
+    
+    
+#showByEval(json.load(open("blog.json", "r")), [0,1,2,3,4], 0)
+showByParents(json.load(open("blog.json", "r")), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 1)

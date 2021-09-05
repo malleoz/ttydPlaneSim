@@ -22,6 +22,7 @@ void plane_mutate_point_roundoff(population *pop, entity *father, entity *son){
         next_value = 72;
     }
     int8_t controllerInput = (int8_t) next_value;
+    printf("ROFF %d %d\n", mutate_point, controllerInput);
     ((int8_t *)((entity_chrom *)son->chromosome[0])->controllerInputs)[mutate_point] = controllerInput;
 
 }
@@ -41,6 +42,7 @@ void plane_mutate_point_random(population *pop, entity *father, entity *son){
     int mutate_point = random_int(maxFrame);
     int nextValue = random_int(2*72 + 1); //(0-144, inclusive)
     nextValue -= 72; //-72 to 72, inclusive.
+    printf("RPOI %d %d\n", mutate_point, nextValue);
     int8_t controllerInput = (int8_t) nextValue;
     ((int8_t *)((entity_chrom *)son->chromosome[0])->controllerInputs)[mutate_point] = controllerInput;
 }
@@ -59,6 +61,7 @@ void plane_mutate_region_drift(population *pop, entity *father, entity *son){
     }
     pop->chromosome_replicate(pop, father, son, 0);
     int8_t drift = random_int(50) - 25;
+    printf("RDRI %d %d %d\n", mutate_start, mutate_end, drift);
     //That will be in [-25, +24], so remove the zero shift case and 
     //make it from [-25,-1] U [1,25]
     if(drift >= 0) drift++;
@@ -85,6 +88,7 @@ void plane_mutate_region_set(population *pop, entity *father, entity *son){
     }
     int nextValue = random_int(2*72 + 1); //(0-144, inclusive)
     nextValue -= 72; //-72 to 72, inclusive.
+    printf("RSET %d %d %d\n", mutate_start, mutate_end, nextValue);
     pop->chromosome_replicate(pop, father, son, 0);
     for(int pos = mutate_start; pos <= mutate_end; pos++){
         (((entity_chrom *)son->chromosome[0])
@@ -118,8 +122,11 @@ void plane_mutate_dilate(population *pop, entity *father, entity *son){
     int writeHead = 0;
     int8_t * fatherInputs = ((entity_chrom *)father->chromosome[0])->controllerInputs;
     int8_t * sonInputs = ((entity_chrom *)son->chromosome[0])->controllerInputs;
+
+    printf("DILA %d", indel_mode);
     for(int i = 0; i < pop->len_chromosomes; i++){  
         if(i == indelPoses[curIndelPos]){
+            printf(" %d", i);
             if(indel_mode){//Just move to the next input in the father.
                 continue;
             }else{//Duplicate the father at this position. 
@@ -145,6 +152,7 @@ void plane_mutate_dilate(population *pop, entity *father, entity *son){
             sonInputs[i] = fatherInputs[i];
         }
     }
+    printf("\n");
 }
                 
     
@@ -157,19 +165,14 @@ void joint_mutate(population *pop, entity *father, entity *son){
         print_entity(pop, father);
         int mode = random_int(20);
         if(mode < 3){
-            printf("Region drift.\n");
             plane_mutate_region_drift(pop, father, son);
         }else if (mode < 5){
-            printf("Region set.\n");
             plane_mutate_region_set(pop, father, son);
         }else if (mode < 12){
-            printf("dilate\n");
             plane_mutate_dilate(pop, father, son);
         }else if (mode < 14){
-            printf("roundoff\n");
             plane_mutate_point_roundoff(pop, father, son);
         }else { 
-            printf("Point random\n");
             plane_mutate_point_random(pop, father, son);
         }
     printf("Final:\n");

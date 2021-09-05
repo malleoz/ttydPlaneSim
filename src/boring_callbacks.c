@@ -58,7 +58,7 @@ void plane_chromosome_replicate(const population *pop,
     if(!src->chromosome[0] || !dest->chromosome[0]) die("Empty chromosomes.");
     entity_chrom *srcChrom = (entity_chrom *) src->chromosome[0];
     entity_chrom *destChrom = (entity_chrom *) dest->chromosome[0];
-    printf("REPLICATE: %d -> %d\n", srcChrom->name, destChrom->name);
+    //printf("REPLICATE: %d -> %d\n", srcChrom->name, destChrom->name);
     for(int i=0; i<pop->len_chromosomes; i++){
         destChrom->controllerInputs[i] = srcChrom->controllerInputs[i];
         destChrom->results[i] = srcChrom->results[i];
