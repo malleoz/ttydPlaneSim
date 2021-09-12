@@ -20,13 +20,13 @@ for line in sys.stdin:
         dyingEntities.append(int(line[12:]))
     elif(line[0:5] == "Gener"):
         survivors = []
-        liveEntitiesFp.write("L {0:d}".format(generation))
+        liveEntitiesFp.write("L {0:d} ".format(generation))
         for elem in liveEntities:
             liveEntitiesFp.write("{0:d} ".format(elem))
             if(elem not in dyingEntities):
                 survivors.append((elem, entityScores[elem]))
         liveEntitiesFp.write("\n")
-        liveEntitiesFp.write("S {0:d}".format(generation))
+        liveEntitiesFp.write("S {0:d} ".format(generation))
         for elem in survivors:
             liveEntitiesFp.write("{0:d} ".format(elem[0]))
         liveEntitiesFp.write("\n")

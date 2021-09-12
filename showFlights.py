@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
@@ -19,7 +18,8 @@ for line in open("colorInfo.dat", "r"):
 def entityToColorID(entityId, generation):
     possibles = entityColors[entityId]
     rv = -1
-    for i in range(generation+1):
+    print(entityId, generation, possibles)
+    for i in range(0, generation+1):
         if(i in possibles):
             rv = possibles[i]
     return rv
@@ -33,7 +33,7 @@ def intToColor(colorid):
                 [0xff, 0x6d, 0xb6],
                 #[0xff, 0xb6, 0xdb],
                 [0x49, 0, 0x92],
-                [0, 0x6d, 0xdb],
+                [0, 0x6d, 0xfb],
                 #[0xb6, 0x6d, 0xff],
                 #[0x6d, 0xb6, 0xff],
                 #[0xb6, 0xdb, 0xff],
@@ -130,13 +130,14 @@ def showStart():
         flight.plotxy(ax1)
     plt.show()
 
-def showByEval(inJson, entityIds, generation):
+def showByEval(inJson, entityIds, generations, outFile):
     flights = []
     for elem in inJson:
-        if(elem["id"] in entityIds):
-            flight = Flight(elem, generation, False)
-            flight.runSimulation()
-            flights.append(flight)
+        for i in range(len(entityIds)):
+            if(elem["id"] == entityIds[i]):
+                flight = Flight(elem, generations[i], False)
+                flight.runSimulation()
+                flights.append(flight)
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
     yMin = min([min(f.yPoses) for f in flights])
     yMax = max([max(f.yPoses) for f in flights])
@@ -144,15 +145,17 @@ def showByEval(inJson, entityIds, generation):
     for i, flight in enumerate(flights):
         flight.plotInputs(ax2, 200*i, True)
         flight.plotxy(ax1)
-    plt.show()
+    fig.savefig(outFile)
+    plt.close(fig)
         
-def showByParents(inJson, entityIds, generation):
+def showByParents(inJson, entityIds, generations, outFile):
     flights = []
     for elem in inJson:
-        if(elem["id"] in entityIds):
-            flight = Flight(elem, generation, True)
-            flight.runSimulation()
-            flights.append(flight)
+        for i in range(len(entityIds)):
+            if(elem["id"] == entityIds[i]):
+                flight = Flight(elem, generations[i], True)
+                flight.runSimulation()
+                flights.append(flight)
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
     yMin = min([min(f.yPoses) for f in flights])
     yMax = max([max(f.yPoses) for f in flights])
@@ -160,7 +163,8 @@ def showByParents(inJson, entityIds, generation):
     for i, flight in enumerate(flights):
         flight.plotInputs(ax2, 200*i, False)
         flight.plotxy(ax1)
-    plt.show()
+    fig.savefig(outFile)
+    plt.close(fig)
         
     
     
@@ -179,5 +183,27 @@ def showFirstMixes():
     plt.show()
     
     
-#showByEval(json.load(open("blog.json", "r")), [0,1,2,3,4], 0)
-showByParents(json.load(open("blog.json", "r")), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 1)
+
+def makeAll():
+    inFp = open("liveEntities.dat", "r")
+    firstGenerations = dict()
+    inJson = json.load(open("blog.json", "r"))
+    for line in inFp:
+        lsp = line.split()
+        mode = lsp[0]
+        gen = int(lsp[1])
+        if(mode == "L"):
+            for elem in lsp[2:]:
+                if(int(elem) not in firstGenerations):
+                    firstGenerations[int(elem)] = gen
+            showByParents(inJson, [int(x) for x in lsp[2:]],\
+                         [firstGenerations[int(x)] for x in lsp[2:]], \
+                          "L_{0:02d}.png".format(gen))
+        elif(mode == "S"):
+            showByEval(inJson, [int(x) for x in lsp[2:]], [gen] * 5, "S_{0:02d}".format(gen))
+
+#showByEval(json.load(open("blog.json", "r")), [0,1,2,3,4], [0,0,0,0,0])
+#showByParents(json.load(open("blog.json", "r")), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], [0]*5 + [1]*10)
+#showByEval(json.load(open("blog.json", "r")), [0,6,8,12,14], [1,1,1,1,1])
+#showByParents(json.load(open("blog.json", "r")), [0, 12, 6, 14, 8, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26], [0] + [1] * 4 + [2] * 12)
+makeAll()
