@@ -16,7 +16,10 @@ for line in open("colorInfo.dat", "r"):
         entityColors[eid] = dict()
     entityColors[eid][int(lsp[2])] = int(lsp[1])
 def entityToColorID(entityId, generation):
-    possibles = entityColors[entityId]
+    if(entityId in entityColors):
+        possibles = entityColors[entityId]
+    else:
+        return 0
     rv = -1
     print(entityId, generation, possibles)
     for i in range(0, generation+1):
@@ -103,25 +106,29 @@ class Flight:
     def plotxy(self, ax):
         ax.scatter(self.xPoses, self.yPoses, c=self._colors[:self.collideFrame+1], s=self._sizes)
 
-    def plotInputs(self, ax, offset, collideSize = False):
+    def plotInputs(self, ax, offset, collideSize = False, scale=False):
         sizes = self._sizes
         if(collideSize):
-            sizes = [intToSize(1)] * self.collideFrame + \
+            sizes = [intToSize(2)] * self.collideFrame + \
                     [intToSize(0)] * (100 - self.collideFrame)
         ax.scatter(range(100), self._inputs + offset, \
                     c=self._colors, s=sizes)
         ax.plot(range(100), self._inputs + offset, "k-")
+        if(scale):
+            ax.set_ylim((-73, 73))
 
 def prepXy(ax, yMin, yMax):
-    ax.plot([296.15, 296.15], [yMin, yMax], "b--")
-    ax.plot([525, 525, 530], [yMin, 10, 10], "b--")
+    ax.set_ylim((-50, 100))
+    ax.plot([296.15, 296.15], [-50, 90], "b--")
+    ax.plot([525, 525, 540], [-50, 10, 10], "b--")
+    ax.set_xlim((290, 540))
 
 def showStart():
     vals = json.load(open("fs_init.json"))
     flights = [Flight(x) for x in vals]
     [x.runSimulation() for x in flights]
 
-    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    fig, (ax2, ax1) = plt.subplots(nrows=1, ncols=2)
     yMin = min([min(f.yPoses) for f in flights])
     yMax = max([max(f.yPoses) for f in flights])
     prepXy(ax1, yMin, yMax)
@@ -138,14 +145,16 @@ def showByEval(inJson, entityIds, generations, outFile):
                 flight = Flight(elem, generations[i], False)
                 flight.runSimulation()
                 flights.append(flight)
-    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    #fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    fig = plt.figure(figsize=(10,7))
+    (ax2, ax1) = fig.subplots(nrows=1, ncols=2)
     yMin = min([min(f.yPoses) for f in flights])
     yMax = max([max(f.yPoses) for f in flights])
     prepXy(ax1, yMin, yMax)
     for i, flight in enumerate(flights):
         flight.plotInputs(ax2, 200*i, True)
         flight.plotxy(ax1)
-    fig.savefig(outFile)
+    fig.savefig(outFile, dpi=300)
     plt.close(fig)
         
 def showByParents(inJson, entityIds, generations, outFile):
@@ -156,14 +165,15 @@ def showByParents(inJson, entityIds, generations, outFile):
                 flight = Flight(elem, generations[i], True)
                 flight.runSimulation()
                 flights.append(flight)
-    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    fig = plt.figure(figsize=(10,7))
+    (ax2, ax1) = fig.subplots(nrows=1, ncols=2)
     yMin = min([min(f.yPoses) for f in flights])
     yMax = max([max(f.yPoses) for f in flights])
     prepXy(ax1, yMin, yMax)
     for i, flight in enumerate(flights):
-        flight.plotInputs(ax2, 200*i, False)
+        flight.plotInputs(ax2, 200*i, False, scale=(len(flights) == 1))
         flight.plotxy(ax1)
-    fig.savefig(outFile)
+    fig.savefig(outFile, dpi=300)
     plt.close(fig)
         
     
@@ -196,14 +206,37 @@ def makeAll():
             for elem in lsp[2:]:
                 if(int(elem) not in firstGenerations):
                     firstGenerations[int(elem)] = gen
-            showByParents(inJson, [int(x) for x in lsp[2:]],\
-                         [firstGenerations[int(x)] for x in lsp[2:]], \
-                          "L_{0:02d}.png".format(gen))
+                    showByParents(inJson, \
+                        [int(elem)],\
+                        [firstGenerations[int(elem)]], \
+                        "gens/U_{0:02d}.png".format(int(elem)))
+                    showByEval(inJson, \
+                        [int(elem)],\
+                        [firstGenerations[int(elem)]], \
+                        "gens/P_{0:02d}.png".format(int(elem)))
+                        
+            showByParents(inJson, \
+                [int(x) for x in lsp[2:]],\
+                [firstGenerations[int(x)] for x in lsp[2:]], \
+                "gens/L_{0:02d}.png".format(gen))
         elif(mode == "S"):
-            showByEval(inJson, [int(x) for x in lsp[2:]], [gen] * 5, "S_{0:02d}".format(gen))
+            pass
+            showByEval(inJson, \
+                [int(x) for x in lsp[2:]], \
+                [gen] * 5, \
+                "gens/S_{0:02d}".format(gen))
 
 #showByEval(json.load(open("blog.json", "r")), [0,1,2,3,4], [0,0,0,0,0])
 #showByParents(json.load(open("blog.json", "r")), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], [0]*5 + [1]*10)
 #showByEval(json.load(open("blog.json", "r")), [0,6,8,12,14], [1,1,1,1,1])
 #showByParents(json.load(open("blog.json", "r")), [0, 12, 6, 14, 8, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26], [0] + [1] * 4 + [2] * 12)
 makeAll()
+
+#I also want to make all flights in their own frame. 
+#def makeIndividuals():
+#    firstGenerations = dict()
+#    inJson = json.load(open("blog.json", "r"))
+#    for i in range(100):
+#        firstGenerations[i] = 0
+#        showByParents(inJson, [i], [0], "gens/U_{0:02d}.png".format(i))
+#makeIndividuals()
